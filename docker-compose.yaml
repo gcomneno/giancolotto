@@ -6,6 +6,7 @@ services:
       context: .
     volumes:
       - ./data:/app/data
+      - ./config.ini:/app/config.ini
     depends_on:
       - mongodb
     tty: true
