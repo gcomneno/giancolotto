@@ -6,8 +6,5 @@ __pycache__/
 # Cartelle di ambiente virtuale
 venv/
 
-# File di configurazione locali
-config.ini
-
 # Cartella dei dati
 data/db/

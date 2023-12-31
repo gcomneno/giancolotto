@@ -10,4 +10,4 @@ down:
 	docker-compose down
 
 run:
-	docker-compose exec giancolotto python main.py
+	docker-compose exec giancolotto python ./src/main.py
