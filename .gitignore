@@ -1,0 +1,13 @@
+# File generati automaticamente
+__pycache__/
+*.pyc
+*.pyo
+
+# Cartelle di ambiente virtuale
+venv/
+
+# File di configurazione locali
+config.ini
+
+# Cartella dei dati
+data/db/

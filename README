@@ -1,0 +1,43 @@
+# Giancolotto
+
+## Descrizione
+Giancolotto è un'applicazione Python per estrarre e analizzare dati delle estrazioni al gioco del lotto.
+
+## Dipendenze
+- Python 3.x
+- Docker
+- MongoDB
+
+## Installazione
+1. Clona il repository:
+   git clone https://github.com/gcomneno/giancolotto.git
+   cd giancolotto
+
+2. Costruisci l'immagine Docker
+    make build
+
+3. Avvia i container:
+    make up
+
+4. Arresta e rimuove i container Docker
+    make down
+
+## Utilizzo
+## Verifica che i container siano in esecuzione:
+    docker-compose ps
+
+## Esegui l'applicazione nel container
+    docker-compose exec giancolotto python main.py
+    ...
+
+## Configurazione
+Modifica il file config.ini per personalizzare la configurazione dell'applicazione.
+
+## Risorse Aggiuntive
+
+    Documentazione di MongoDB
+    Docker Documentation
+    ...
+
+## Licenza
+Questo progetto è distribuito con la licenza MIT.
