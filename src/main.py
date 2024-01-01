@@ -26,6 +26,8 @@ if __name__ == "__main__":
             elif filtro == 'cifre':
                 lotto_extractor.print_results_cifre(numbers, nomi_ruote, numeri_per_ruota, estr + 1)
 
+            lotto_extractor.salva_su_mongodb(numbers, nomi_ruote, numeri_per_ruota)
+
         print()
     except Exception as e:
         print(f"Errore: {e}")

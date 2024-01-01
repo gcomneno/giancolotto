@@ -2,13 +2,17 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import configparser
+import pymongo
 
 class LottoExtractor:
     def __init__(self, config_file='config.ini'):
         self.config = self.read_config(config_file)
         self.url = self.config.get('Scraping', 'url')
+        
         self.numeri_evidenziati = self.get_numeri_evidenziati()
         self.cifre_evidenziate = self.get_cifre_evidenziate()
+        self.Persistence_attiva = self.config.getboolean('Persistence', 'attiva')
+
         self.response = self.fetch_data()
         self.extractions = self.parse_data()
 
@@ -131,3 +135,39 @@ class LottoExtractor:
                 # Assicurati di andare a capo alla fine del ciclo
                 print()
 
+    def salva_su_mongodb(self, refs, nomi_ruote, numeri_per_ruota):
+        # Verifica se è abilitato il salvataggio su MongoDB
+        persisti_mongodb = self.config.getboolean('Persistence', 'attiva')
+
+        if persisti_mongodb:
+            try:
+                # Ottieni le opzioni di configurazione
+                host = self.config.get('Persistence', 'host')
+                porta = self.config.getint('Persistence', 'porta')
+                database_nome = self.config.get('Persistence', 'database')
+                collezione_nome = self.config.get('Persistence', 'collezione')
+
+                # Connessione a MongoDB
+                client = pymongo.MongoClient(host, porta)
+                db = client[database_nome]
+                collezione = db[collezione_nome]
+
+                # Crea un documento da inserire nel database
+                documento = {
+                    "estratto": refs[0],
+                    "data": f"{refs[1]}/{refs[2]}/{refs[3]}",
+                    "ruote": []
+                }
+
+                # Aggiungi le informazioni di ogni ruota al documento
+                for ruota, numeri in numeri_per_ruota.items():
+                    documento_ruota = {
+                        "nome_ruota": ruota,
+                        "numeri": numeri
+                    }
+                    documento["ruote"].append(documento_ruota)
+
+                # Inserisci il documento nella collezione
+                collezione.insert_one(documento)
+            except Exception as e:
+                print(f"Errore durante il salvataggio su MongoDB: {e}")
