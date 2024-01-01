@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import configparser
 import pymongo
+from collections import Counter
 
 class LottoExtractor:
     def __init__(self, config_file='config.ini'):
@@ -208,3 +209,23 @@ class LottoExtractor:
         except Exception as e:
             print(f"Errore durante il recupero delle collection: {e}")
             return []
+
+    def calcola_statistiche_cifre(self, numeri_per_ruota):
+        cifre_presenti = Counter()
+        ruota_specifica = self.config['Scraping']['ruota']
+        for ruota, numeri in numeri_per_ruota.items():
+            if not ruota_specifica or ruota == ruota_specifica:
+                for numero in numeri:
+                    cifre_presenti.update(str(numero).zfill(2))
+
+        # Aggiungi le cifre mancanti con presenza 0
+        cifre_totali = set(str(i) for i in range(10))
+        cifre_presenti.update(dict.fromkeys(cifre_totali - set(cifre_presenti.keys()), 0))
+
+        # Restituisci la lista di tuple ordinate per cifra ascendente
+        statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: int(x[0]))
+
+        # Restituisci la lista di tuple ordinate per presenza discendente
+        #statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: x[1], reverse=True)
+        
+        return statistiche_ordinate

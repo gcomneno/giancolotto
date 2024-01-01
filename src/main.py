@@ -1,4 +1,5 @@
 from lotto_extractor import LottoExtractor
+from collections import Counter
 
 if __name__ == "__main__":
 
@@ -27,6 +28,8 @@ if __name__ == "__main__":
         filtro = 'numeri'
 
     try:
+        cifre_statistiche = Counter()
+
         for estr in range(num_estr):
             refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr + 1)
 
@@ -37,6 +40,22 @@ if __name__ == "__main__":
 
             lotto_extractor.salva_su_mongodb(refs, numeri_per_ruota)
 
+            if estr > 0:
+                # Calcola le statistiche delle presenze per ogni cifra            
+                presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
+
+                # Aggiorna le statistiche delle cifre con quelle dell'estratto corrente
+                cifre_statistiche.update(dict(presenze_estr))
+                
         print()
+
+        # Stampa le statistiche finali
+        print("Statistica delle cifre alla estraz.-1:")
+        print("Cifra   Presenze")
+        for cifra, presenze in cifre_statistiche.items():
+            print(f"{cifra}\t{presenze}")
+        
+        print()
+
     except Exception as e:
         print(f"Errore: {e}")
