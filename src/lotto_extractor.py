@@ -8,6 +8,7 @@ class LottoExtractor:
         self.config = self.read_config(config_file)
         self.url = self.config.get('Scraping', 'url')
         self.numeri_evidenziati = self.get_numeri_evidenziati()
+        self.cifre_evidenziate = self.get_cifre_evidenziate()
         self.response = self.fetch_data()
         self.extractions = self.parse_data()
 
@@ -24,6 +25,14 @@ class LottoExtractor:
         except (configparser.NoSectionError, configparser.NoOptionError, ValueError):
             return set()
 
+    def get_cifre_evidenziate(self):
+        try:
+            cifre_str = self.config['Filtering']['cifre']
+            cifre = [int(cifra) for cifra in cifre_str.split(',')]
+            return set(cifre)
+        except (configparser.NoSectionError, configparser.NoOptionError, ValueError):
+            return set()
+        
     def fetch_data(self):
         response = requests.get(self.url)
         if response.status_code == 200:
@@ -58,7 +67,30 @@ class LottoExtractor:
             print("Numero estrazione non valido.")
             return None, None, None
 
-    def print_results(self, refs, nomi_ruote, numeri_per_ruota, curr_estr):
+    def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, curr_estr):
+        ruota_specifica = self.config['Scraping']['ruota']
+        if not ruota_specifica or curr_estr == 1:
+            print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
+            print("===========================================================================")
+
+        for ruota, numeri in numeri_per_ruota.items():
+            if not ruota_specifica or ruota == ruota_specifica:
+                print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}", end="\t")
+                print(f"{ruota.ljust(9)}", end="\t")
+                for numero in numeri:
+                    # Verifica se il numero è tra quelli da evidenziare
+                    if numero in self.numeri_evidenziati:
+                        # Evidenzia il numero con un colore (ad esempio, colore rosso)
+                        print("\033[91m", end="")
+                        print(f"{numero:02d}", end="\t")
+                        print("\033[0m", end="")
+                    else:
+                        print(f"{numero:02d}", end="\t")
+
+                # Vai a capo alla fine della riga
+                print()
+
+    def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, curr_estr):
         ruota_specifica = self.config['Scraping']['ruota']
         if not ruota_specifica or curr_estr == 1:
             print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
@@ -67,16 +99,35 @@ class LottoExtractor:
         for ruota, numeri in numeri_per_ruota.items():
             if not ruota_specifica or ruota == ruota_specifica:
                 print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}", end="\t")
-
-                numeri_formattati = [int(numero) for numero in numeri]
                 print(f"{ruota.ljust(9)}", end="\t")
-
-                for numero in numeri_formattati:
-                    # Verifica se il numero è tra quelli da evidenziare
-                    if numero in self.numeri_evidenziati:
-                        # Evidenzia il numero con un colore
-                        print(f"\033[91m{numero:02d}\033[0m", end="\t")
+                for numero in numeri:
+                    if numero < 10:
+                        # Aggiungi uno zero davanti al numero e crea una lista di cifre
+                        cifre = [0, numero]
                     else:
-                        print(f"{numero:02d}", end="\t")
+                        # Altrimenti, crea una lista di cifre normalmente
+                        cifre = [int(cifra) for cifra in str(numero)]
+                        
+                    for i, cifra in enumerate(cifre, start=1):
+                        # Verifica se la cifra è tra quelle da evidenziare
+                        if cifra in self.cifre_evidenziate:
+                            # Evidenzia la cifra con un colore (ad esempio, colore verde chiaro)
+                            print("\033[92m", end="")
+                            print(cifra, end="")
+                            print("\033[0m", end="")
+                        else:
+                            print(cifra, end="")
 
+                        # Aggiungi un tabulatore ogni due cifre
+                        if i % 2 == 0:
+                            print("\t", end="")
+
+                    # Aggiungi un ritorno a capo dopo 10 cifre
+                    if i % 10 == 0:
+                        print()
+                    else:
+                        print("", end="")
+
+                # Assicurati di andare a capo alla fine del ciclo
                 print()
+

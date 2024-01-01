@@ -33,6 +33,23 @@ Giancolotto è un'applicazione Python per estrarre e analizzare dati delle estra
 ## Configurazione
 Modifica il file config.ini per personalizzare la configurazione dell'applicazione.
 
+Esempio
+
+[Scraping]
+# Il sito dal quale recuperare le estrazioni del Lotto
+url=https://www.estrazionedellotto.it/ultime-estrazioni-lotto
+
+# Numero di estrazioni da recuperare
+num_estr=1
+
+# Ruota specifica (lascia vuoto per tutte le ruote)
+ruota=
+
+[Filtering]
+filtro=cifre
+numeri=8,11
+cifre=0,9
+
 ## Risorse Aggiuntive
 
     Documentazione di MongoDB
