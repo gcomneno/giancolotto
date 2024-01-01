@@ -40,6 +40,7 @@ if __name__ == "__main__":
 
             lotto_extractor.salva_su_mongodb(refs, numeri_per_ruota)
 
+            # Previsionale ? (Ignora l'ultimissima estrazione)
             if estr > 0:
                 # Calcola le statistiche delle presenze per ogni cifra            
                 presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
@@ -51,10 +52,10 @@ if __name__ == "__main__":
 
         # Stampa le statistiche finali
         print("Statistica delle cifre alla estraz.-1:")
-        print("Cifra   Presenze")
-        for cifra, presenze in cifre_statistiche.items():
-            print(f"{cifra}\t{presenze}")
-        
+        print("Presenze\tCifra")
+        for cifra, presenze in cifre_statistiche.most_common():
+            print(f"{presenze}\t\t{cifra}")
+
         print()
 
     except Exception as e:

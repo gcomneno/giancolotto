@@ -222,10 +222,7 @@ class LottoExtractor:
         cifre_totali = set(str(i) for i in range(10))
         cifre_presenti.update(dict.fromkeys(cifre_totali - set(cifre_presenti.keys()), 0))
 
-        # Restituisci la lista di tuple ordinate per cifra ascendente
-        statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: int(x[0]))
-
         # Restituisci la lista di tuple ordinate per presenza discendente
-        #statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: x[1], reverse=True)
+        statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: x[1], reverse=True)
         
         return statistiche_ordinate
