@@ -11,7 +11,6 @@ class LottoExtractor:
         
         self.numeri_evidenziati = self.get_numeri_evidenziati()
         self.cifre_evidenziate = self.get_cifre_evidenziate()
-        self.Persistence_attiva = self.config.getboolean('Persistence', 'attiva')
 
         self.response = self.fetch_data()
         self.extractions = self.parse_data()
@@ -135,17 +134,20 @@ class LottoExtractor:
                 # Assicurati di andare a capo alla fine del ciclo
                 print()
 
-    def salva_su_mongodb(self, refs, nomi_ruote, numeri_per_ruota):
+    def salva_su_mongodb(self, refs, numeri_per_ruota):
         # Verifica se è abilitato il salvataggio su MongoDB
-        persisti_mongodb = self.config.getboolean('Persistence', 'attiva')
-
-        if persisti_mongodb:
+        if self.config.getboolean('Persistence', 'attiva'):
             try:
                 # Ottieni le opzioni di configurazione
                 host = self.config.get('Persistence', 'host')
                 porta = self.config.getint('Persistence', 'porta')
                 database_nome = self.config.get('Persistence', 'database')
-                collezione_nome = self.config.get('Persistence', 'collezione')
+
+                ruota_specifica = self.config['Scraping']['ruota']
+                if not ruota_specifica:
+                    ruota_specifica = 'Tutte'
+
+                collezione_nome = f"{refs[3]}{refs[0]}{ruota_specifica}"
 
                 # Connessione a MongoDB
                 client = pymongo.MongoClient(host, porta)
@@ -154,7 +156,7 @@ class LottoExtractor:
 
                 # Crea un documento da inserire nel database
                 documento = {
-                    "estratto": refs[0],
+                    "estrazione": refs[0],
                     "data": f"{refs[1]}/{refs[2]}/{refs[3]}",
                     "ruote": []
                 }
@@ -169,5 +171,40 @@ class LottoExtractor:
 
                 # Inserisci il documento nella collezione
                 collezione.insert_one(documento)
+                print(f"Estrazione salvata nella collection: {collezione_nome}")
+
+                # Chiudi la connessione solo dopo aver completato tutte le operazioni
+                client.close()
+                
             except Exception as e:
                 print(f"Errore durante il salvataggio su MongoDB: {e}")
+
+    def get_collections(self):
+        try:
+            # Connetti al server MongoDB
+            host = self.config.get('Persistence', 'host')
+            porta = self.config.getint('Persistence', 'porta')
+
+            client = pymongo.MongoClient(host, porta)
+            
+            # Scegli il database
+            db = client[self.config.get('Persistence', 'database')]
+
+            # Ottieni una lista di tutte le collection nel database
+            collections_list = db.list_collection_names()
+
+            purge = self.config['Persistence'].get('purga')
+            if purge:
+                # Pulizia di ogni collezione
+                for collection_name in collections_list:
+                    collection = db[collection_name]
+                    collection.drop()
+
+            # Chiudi la connessione al server MongoDB
+            client.close()
+
+            # Restituisci la lista delle collection
+            return collections_list
+        except Exception as e:
+            print(f"Errore durante il recupero delle collection: {e}")
+            return []
