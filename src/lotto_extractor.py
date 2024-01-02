@@ -71,9 +71,9 @@ class LottoExtractor:
             print("Numero estrazione non valido.")
             return None, None, None
 
-    def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, curr_estr):
+    def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, printHeader):
         ruota_specifica = self.config['Scraping']['ruota']
-        if not ruota_specifica or curr_estr == 1:
+        if not ruota_specifica or printHeader:
             print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
             print("===========================================================================")
 
@@ -94,9 +94,9 @@ class LottoExtractor:
                 # Vai a capo alla fine della riga
                 print()
 
-    def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, curr_estr):
+    def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader):
         ruota_specifica = self.config['Scraping']['ruota']
-        if not ruota_specifica or curr_estr == 1:
+        if not ruota_specifica or printHeader:
             print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
             print("===========================================================================")
         
