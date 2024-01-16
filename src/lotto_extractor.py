@@ -223,6 +223,6 @@ class LottoExtractor:
         cifre_presenti.update(dict.fromkeys(cifre_totali - set(cifre_presenti.keys()), 0))
 
         # Restituisci la lista di tuple ordinate per presenza discendente
-        statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: x[1], reverse=True)
+        statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: x[0], reverse=False)
         
         return statistiche_ordinate
