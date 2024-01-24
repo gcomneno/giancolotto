@@ -226,3 +226,34 @@ class LottoExtractor:
         statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: x[0], reverse=False)
         
         return statistiche_ordinate
+
+    def generate_associations(self, cifre_statistiche, estrazione):
+        associations = []
+
+        # Individua la ruota specifica se presente
+        ruota_specifica = self.config['Scraping']['ruota']
+        if not ruota_specifica:
+            ruota_specifica = 'Tutte'
+
+        # Estrai i 5 numeri della ruota selezionata (o tutte)
+        numeri_ruota = estrazione.get(ruota_specifica, [])
+
+        # Aggiunge lo zero iniziale ai numeri minori di 10
+        numeri_formattati = [str(numero).zfill(2) for numero in numeri_ruota]
+
+        # Genera le associazioni per ogni numero dell'ultima estrazione
+        for num in numeri_formattati:
+            # Converti il numero in una stringa per poter scorrere la sua sequenza di cifre
+            num_str = str(num)
+            associations_for_num = []
+
+            for cifra in num_str:
+                associations_for_num.append(str(cifre_statistiche.get(cifra, 0)))
+
+                # Aggiungi la coppia alla lista se ne hai accumulate due
+                if len(associations_for_num) == 2:
+                    associations.append("".join(associations_for_num))
+                    # Resetta la lista dopo ogni coppia
+                    associations_for_num = []
+
+        return associations

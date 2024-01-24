@@ -39,6 +39,9 @@ if __name__ == "__main__":
         for estr in range(offset_estr, offset_estr + num_estr):
             refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr + 1)
 
+            if estr == offset_estr:
+                 prima_estrazione = numeri_per_ruota
+
             printHeader = estr == offset_estr
             if filtro == 'numeri':
                 lotto_extractor.print_results_numeri(refs, nomi_ruote, numeri_per_ruota, printHeader)
@@ -65,6 +68,13 @@ if __name__ == "__main__":
         for cifra, presenze in cifre_statistiche.most_common():
             print(f"{presenze}\t\t{cifra}")
 
+        print()
+
+        # Genera le accopiamenti di presenza delle cifre in base alla classifica corrente
+        associations = lotto_extractor.generate_associations(cifre_statistiche, prima_estrazione)
+
+        # Stampa tutte le coppie relazionate su una singola riga
+        print("|".join(associations))
         print()
 
     except Exception as e:
