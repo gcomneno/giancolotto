@@ -5,14 +5,8 @@ if __name__ == "__main__":
 
     lotto_extractor = LottoExtractor()
 
-    # Stampa le collezioni presenti nel database
-    collections = lotto_extractor.get_collections()
-    if collections:
-        print("Collezioni presenti nel database:")
-        for collection_name in collections:
-            print(collection_name)
-    else:
-        print("Nessuna collezione presente nel database.")    
+    # Stampa le collezioni eventualmente già presenti nel db
+    lotto_extractor.stampa_collezioni()
 
     # Imposta il numero di estrazioni da recuperare. Default = 1
     try:
@@ -48,7 +42,7 @@ if __name__ == "__main__":
             elif filtro == 'cifre':
                 lotto_extractor.print_results_cifre(refs, nomi_ruote, numeri_per_ruota, printHeader)
 
-            lotto_extractor.salva_su_mongodb(refs, numeri_per_ruota)
+            lotto_extractor.salva_su_mongodb('ESTR', refs, numeri_per_ruota)
 
             # Previsionale ? (Ignora l'ultimissima estrazione)
             previsionale = lotto_extractor.config.getboolean('Stats', 'previsionale')
@@ -73,9 +67,27 @@ if __name__ == "__main__":
         # Genera le accopiamenti di presenza delle cifre in base alla classifica corrente
         associations = lotto_extractor.generate_associations(cifre_statistiche, prima_estrazione)
 
+        # Sala le associazioni appena generate
+        lotto_extractor.salva_su_mongodb('ASSO', refs, associations, is_association=True)
+
+        # Formatta le associazioni per l'output a video
+        formatted_associations = lotto_extractor.format_associations(associations)
+
         # Stampa tutte le coppie relazionate su una singola riga
-        print("|".join(associations))
+        for ruota, assoc_list in formatted_associations.items():
+            print("|".join("".join(pair) for pair in zip(*[iter(assoc_list)]*2)))
+
         print()
+
+        # # Chiamata alla funzione per caricare e calcolare la classifica delle associazioni da DB
+        # ruota_specifica = lotto_extractor.ottieni_ruota_specifica()
+        # risultati_associazioni = lotto_extractor.carica_associazioni_da_mongodb(ruota_specifica=ruota_specifica)
+
+        # # Generazione e stampa della classifica delle associazioni
+        # classifica = LottoExtractor.calcola_classifica_associazioni(risultati_associazioni)
+        # print("Classifica delle coppie di presenze più presenti:")
+        # for coppia, presenze in classifica:
+        #     print(f"{coppia}: {presenze} volte")
 
     except Exception as e:
         print(f"Errore: {e}")

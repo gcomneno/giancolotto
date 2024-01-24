@@ -21,6 +21,21 @@ class LottoExtractor:
         config.read(config_file)
         return config
 
+    def ottieni_opzioni_configurazione(self):
+        host = self.config.get('Persistence', 'host')
+        porta = self.config.getint('Persistence', 'porta')
+        database_nome = self.config.get('Persistence', 'database')
+        return host, porta, database_nome
+
+    def ottieni_connessione_mongodb(self):
+        host, porta, database_nome = self.ottieni_opzioni_configurazione()        
+        client = pymongo.MongoClient(host, porta)
+        return client, client[database_nome]
+
+    def ottieni_ruota_specifica(self):
+        ruota_specifica = self.config['Scraping']['ruota']
+        return ruota_specifica if ruota_specifica else 'Tutte'
+
     def get_numeri_evidenziati(self):
         try:
             numeri_str = self.config['Filtering']['numeri']
@@ -135,44 +150,108 @@ class LottoExtractor:
                 # Assicurati di andare a capo alla fine del ciclo
                 print()
 
-    def salva_su_mongodb(self, refs, numeri_per_ruota):
+    def stampa_collezioni(self):
+        # Verifica se è abilitata la persistenza
+        if self.config.getboolean('Persistence', 'attiva'):
+            try:
+                # Ottieni la connessione a MongoDB
+                client, db = self.ottieni_connessione_mongodb()
+
+                # Ottieni le collezioni presenti nel database
+                collections = db.list_collection_names()
+
+                if collections:
+                    print("Collezioni presenti nel database:")
+                    for collection_name in collections:
+                        print(collection_name)
+                else:
+                    print("Nessuna collezione presente nel database.")
+
+                # Chiudi la connessione solo dopo aver completato tutte le operazioni
+                client.close()
+
+            except Exception as e:
+                print(f"Errore durante la visualizzazione delle collezioni nel database: {e}")
+
+    def carica_associazioni_da_mongodb(self, ruota_specifica='Tutte'):
+        # Ottieni la connessione a MongoDB
+        client, db = self.ottieni_connessione_mongodb()
+
+        # Ottieni le collezioni che iniziano con "ASSO" dal database
+        collections = [collezione for collezione in db.list_collection_names() if collezione.startswith("ASSO")]
+
+        # Dizionario per tenere traccia delle presenze delle coppie
+        coppie_presenze = {}
+
+        # Itera attraverso le collezioni
+        for collezione_nome in collections:
+            # Estrai la ruota dal nome della collezione
+            ruota_collezione = collezione_nome.replace("ASSO", "")
+            
+            # Carica le associazioni solo se la ruota corrisponde a quella specificata o è "Tutte"
+            if ruota_specifica == 'Tutte' or ruota_specifica == ruota_collezione:
+                collezione_associazioni = db[collezione_nome]
+
+                # Itera attraverso i documenti nella collezione
+                for documento in collezione_associazioni.find():
+                    risultati_associazioni = documento.get("associazioni", [])
+
+                    # Itera attraverso le associazioni nel documento
+                    for risultato in risultati_associazioni:
+                        cifre = risultato.split('|')
+
+                        # Itera attraverso le cifre in coppia
+                        for cifra in cifre:
+                            coppie_presenze[cifra] = coppie_presenze.get(cifra, 0) + 1
+
+        # Ordina le coppie in base alle presenze (da più a meno presenti)
+        coppie_ordinate = sorted(coppie_presenze.items(), key=lambda x: x[1], reverse=True)
+
+        client.close()
+
+        return coppie_ordinate
+
+    def salva_su_mongodb(self, prefisso_collezione, refs, data, is_association=False):
         # Verifica se è abilitato il salvataggio su MongoDB
         if self.config.getboolean('Persistence', 'attiva'):
             try:
-                # Ottieni le opzioni di configurazione
-                host = self.config.get('Persistence', 'host')
-                porta = self.config.getint('Persistence', 'porta')
-                database_nome = self.config.get('Persistence', 'database')
+                # Ottieni la connessione a MongoDB
+                client, db = self.ottieni_connessione_mongodb()
 
-                ruota_specifica = self.config['Scraping']['ruota']
-                if not ruota_specifica:
-                    ruota_specifica = 'Tutte'
+                # Ottieni la ruota specifica
+                ruota_specifica = self.ottieni_ruota_specifica()
 
-                collezione_nome = f"{refs[3]}{refs[0]}{ruota_specifica}"
-
-                # Connessione a MongoDB
-                client = pymongo.MongoClient(host, porta)
-                db = client[database_nome]
+                # Il nome della collection in DB è prefisso+anno+num_estr+ruota
+                collezione_nome = f"{prefisso_collezione}{refs[3]}{refs[0]}{ruota_specifica}"
                 collezione = db[collezione_nome]
 
                 # Crea un documento da inserire nel database
-                documento = {
-                    "estrazione": refs[0],
-                    "data": f"{refs[1]}/{refs[2]}/{refs[3]}",
-                    "ruote": []
-                }
-
-                # Aggiungi le informazioni di ogni ruota al documento
-                for ruota, numeri in numeri_per_ruota.items():
-                    documento_ruota = {
-                        "nome_ruota": ruota,
-                        "numeri": numeri
+                if is_association:
+                    documento = {
+                        "estrazione": refs[0],
+                        "data": f"{refs[1]}/{refs[2]}/{refs[3]}",
+                        "associazioni": data
                     }
-                    documento["ruote"].append(documento_ruota)
+                else:
+                    documento = {
+                        "estrazione": refs[0],
+                        "data": f"{refs[1]}/{refs[2]}/{refs[3]}",
+                        "ruote": []
+                    }
+
+                    # Aggiungi le informazioni di ogni ruota al documento
+                    for ruota, numeri in data.items():
+                        documento_ruota = {
+                            "nome_ruota": ruota,
+                            "numeri": numeri
+                        }
+                        documento["ruote"].append(documento_ruota)
 
                 # Inserisci il documento nella collezione
                 collezione.insert_one(documento)
-                print(f"Estrazione salvata nella collection: {collezione_nome}")
+
+                print(f"Dati salvati nella collection: {collezione_nome}")
+                print()
 
                 # Chiudi la connessione solo dopo aver completato tutte le operazioni
                 client.close()
@@ -231,9 +310,7 @@ class LottoExtractor:
         associations = []
 
         # Individua la ruota specifica se presente
-        ruota_specifica = self.config['Scraping']['ruota']
-        if not ruota_specifica:
-            ruota_specifica = 'Tutte'
+        ruota_specifica = self.ottieni_ruota_specifica()
 
         # Estrai i 5 numeri della ruota selezionata (o tutte)
         numeri_ruota = estrazione.get(ruota_specifica, [])
@@ -252,8 +329,62 @@ class LottoExtractor:
 
                 # Aggiungi la coppia alla lista se ne hai accumulate due
                 if len(associations_for_num) == 2:
-                    associations.append("".join(associations_for_num))
+                    try:
+                        associations.append({ruota_specifica: associations_for_num.copy()})
+                    except Exception as e:
+                        print(f"Errore nell'aggiunta di associazioni: {e}")
+
                     # Resetta la lista dopo ogni coppia
                     associations_for_num = []
 
         return associations
+
+    def format_associations(self, associations):
+        """
+        Formatta le associazioni in un dizionario con il nome della ruota come chiave
+        e una lista di coppie come valore.
+
+        :param associations: Lista di associazioni
+        :return: Dizionario formattato {'ruota': ['xx', 'xx', ...]}
+        """
+        formatted_dict = {}
+        for association in associations:
+            ruota_name = list(association.keys())[0]
+            pairs_list = association[ruota_name]
+            formatted_dict.setdefault(ruota_name, []).extend(pairs_list)
+
+        return formatted_dict
+
+    def calcola_classifica_associazioni(self, risultati_associazioni):
+
+        # Esempio dei risultati delle associazioni (da cancellare)
+        risultati_associazioni = [
+            "31|31|01|10|40",
+            "10|31|44|11|32",
+            "44|03|41|44|40",
+            "54|11|21|23|55",
+            "31|03|04|50|00",
+            "31|22|21|22|22",
+            "32|00|11|11|02",
+            "33|32|22|23|30",
+            "23|24|33|32|02",
+            "23|32|22|12|11"
+        ]
+
+        # Dizionario per tenere traccia delle presenze delle coppie
+        coppie_presenze = {}
+
+        # Itera attraverso i risultati delle associazioni
+        for risultato in risultati_associazioni:
+            # Separa le cifre nella coppia
+            cifre = risultato.split('|')
+
+            # Itera attraverso le cifre in coppia
+            for cifra in cifre:
+                # Aggiorna il conteggio delle presenze della coppia nel dizionario
+                coppie_presenze[cifra] = coppie_presenze.get(cifra, 0) + 1
+
+        # Ordina le coppie in base alle presenze (da più a meno presenti)
+        coppie_ordinate = sorted(coppie_presenze.items(), key=lambda x: x[1], reverse=True)
+
+        return coppie_ordinate
