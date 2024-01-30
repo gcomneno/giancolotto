@@ -186,7 +186,7 @@ class LottoExtractor:
         # Itera attraverso le collezioni
         for collezione_nome in collections:
             # Estrai la ruota dal nome della collezione
-            ruota_collezione = collezione_nome.replace("ASSO", "")
+            ruota_collezione = collezione_nome[10:]
             
             # Carica le associazioni solo se la ruota corrisponde a quella specificata o è "Tutte"
             if ruota_specifica == 'Tutte' or ruota_specifica == ruota_collezione:
@@ -196,20 +196,10 @@ class LottoExtractor:
                 for documento in collezione_associazioni.find():
                     risultati_associazioni = documento.get("associazioni", [])
 
-                    # Itera attraverso le associazioni nel documento
-                    for risultato in risultati_associazioni:
-                        cifre = risultato.split('|')
-
-                        # Itera attraverso le cifre in coppia
-                        for cifra in cifre:
-                            coppie_presenze[cifra] = coppie_presenze.get(cifra, 0) + 1
-
-        # Ordina le coppie in base alle presenze (da più a meno presenti)
-        coppie_ordinate = sorted(coppie_presenze.items(), key=lambda x: x[1], reverse=True)
 
         client.close()
 
-        return coppie_ordinate
+        return risultati_associazioni
 
     def salva_su_mongodb(self, prefisso_collezione, refs, data, is_association=False):
         # Verifica se è abilitato il salvataggio su MongoDB
@@ -357,19 +347,9 @@ class LottoExtractor:
 
     def calcola_classifica_associazioni(self, risultati_associazioni):
 
-        # Esempio dei risultati delle associazioni (da cancellare)
-        risultati_associazioni = [
-            "31|31|01|10|40",
-            "10|31|44|11|32",
-            "44|03|41|44|40",
-            "54|11|21|23|55",
-            "31|03|04|50|00",
-            "31|22|21|22|22",
-            "32|00|11|11|02",
-            "33|32|22|23|30",
-            "23|24|33|32|02",
-            "23|32|22|12|11"
-        ]
+        print(risultati_associazioni)
+
+        return risultati_associazioni
 
         # Dizionario per tenere traccia delle presenze delle coppie
         coppie_presenze = {}
