@@ -80,9 +80,9 @@ if __name__ == "__main__":
         print()
 
         # Chiamata alla funzione per caricare e calcolare la classifica delle associazioni da DB
-        ruota_specifica = lotto_extractor.ottieni_ruota_specifica()
-        risultati_associazioni = lotto_extractor.carica_associazioni_da_mongodb(ruota_specifica)
-        print(risultati_associazioni)
+        # ruota_specifica = lotto_extractor.ottieni_ruota_specifica()
+        # risultati_associazioni = lotto_extractor.carica_associazioni_da_mongodb(ruota_specifica)
+        # print(risultati_associazioni)
 
         # Generazione e stampa della classifica delle associazioni
         # classifica = LottoExtractor.calcola_classifica_associazioni(risultati_associazioni)

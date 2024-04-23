@@ -99,7 +99,7 @@ class LottoExtractor:
                 for numero in numeri:
                     # Verifica se il numero è tra quelli da evidenziare
                     if numero in self.numeri_evidenziati:
-                        # Evidenzia il numero con un colore (ad esempio, colore rosso)
+                        # Evidenzia il numero con un colore rosso
                         print("\033[91m", end="")
                         print(f"{numero:02d}", end="\t")
                         print("\033[0m", end="")
@@ -130,8 +130,8 @@ class LottoExtractor:
                     for i, cifra in enumerate(cifre, start=1):
                         # Verifica se la cifra è tra quelle da evidenziare
                         if cifra in self.cifre_evidenziate:
-                            # Evidenzia la cifra con un colore (ad esempio, colore verde chiaro)
-                            print("\033[92m", end="")
+                            # Evidenzia la cifra con un colore rosso
+                            print("\033[91m", end="")
                             print(cifra, end="")
                             print("\033[0m", end="")
                         else:
