@@ -1,13 +1,13 @@
-.PHONY: build up down
+.PHONY: build up down run
 
 build:
-	sudo docker-compose build
+	docker-compose build
 
-up:
-	sudo docker-compose up -d
+up:	build
+	docker-compose up -d
 
 down:
-	sudo docker-compose down
+	docker-compose down
 
-run:
-	sudo docker-compose exec giancolotto python ./src/main.py
+run:	up
+	docker-compose exec giancolotto python ./src/main.py

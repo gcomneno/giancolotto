@@ -4,10 +4,6 @@ services:
   giancolotto:
     build:
       context: .
-    volumes:
-      - ./src:/app/src
-      - ./config.ini:/app/config.ini
-      - ./data:/app/data
     depends_on:
       - mongodb
     tty: true
