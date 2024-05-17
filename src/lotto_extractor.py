@@ -4,9 +4,13 @@ import re
 import configparser
 import pymongo
 from collections import Counter
+from colorama import init, Fore, Back, Style
 
 class LottoExtractor:
     def __init__(self, config_file='config.ini'):
+        # Initialize Colorama
+        init()
+
         self.config = self.read_config(config_file)
         self.url = self.config.get('Scraping', 'url')
         
@@ -100,14 +104,12 @@ class LottoExtractor:
                     # Verifica se il numero è tra quelli da evidenziare
                     if numero in self.numeri_evidenziati:
                         # Evidenzia il numero con un colore rosso
-                        print("\033[91m", end="")
-                        print(f"{numero:02d}", end="\t")
-                        print("\033[0m", end="")
+                        print(Fore.RED + f"{numero:02d}", end="\t")
                     else:
-                        print(f"{numero:02d}", end="\t")
+                        print(Fore.WHITE + f"{numero:02d}", end="\t")
 
                 # Vai a capo alla fine della riga
-                print()
+                print(Style.RESET_ALL)
 
     def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader):
         ruota_specifica = self.config['Scraping']['ruota']
@@ -131,11 +133,9 @@ class LottoExtractor:
                         # Verifica se la cifra è tra quelle da evidenziare
                         if cifra in self.cifre_evidenziate:
                             # Evidenzia la cifra con un colore rosso
-                            print("\033[91m", end="")
-                            print(cifra, end="")
-                            print("\033[0m", end="")
+                            print(Fore.RED + str(cifra), end="")
                         else:
-                            print(cifra, end="")
+                            print(Fore.WHITE + str(cifra), end="")
 
                         # Aggiungi un tabulatore ogni due cifre
                         if i % 2 == 0:
@@ -148,7 +148,7 @@ class LottoExtractor:
                         print("", end="")
 
                 # Assicurati di andare a capo alla fine del ciclo
-                print()
+                print(Style.RESET_ALL)
 
     def stampa_collezioni(self):
         # Verifica se è abilitata la persistenza
