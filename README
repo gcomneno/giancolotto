@@ -32,6 +32,10 @@ Giancolotto è un'applicazione Python per estrarre e analizzare dati delle estra
     docker-compose exec giancolotto python ./src/main.py
     ...
 
+## Ambiente locale
+cd /I/DATA/MyWorkspace/Progetti/giancolotto
+winpty make run
+
 ## Configurazione
 Modifica il file config.ini per personalizzare la configurazione dell'applicazione.
 

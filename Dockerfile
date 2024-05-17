@@ -12,7 +12,8 @@ COPY ./config.ini /app/config.ini
 COPY requirements.txt /app/requirements.txt
 
 # Installa le dipendenze
-RUN pip install --no-cache-dir --progress-bar off --upgrade pip && pip install --no-cache-dir --progress-bar off -r requirements.txt
+RUN pip install --no-cache-dir --progress-bar off --upgrade pip
+RUN pip install --no-cache-dir --progress-bar off -r requirements.txt
 
 # Comando di avvio dell'applicazione
 # CMD [ "python", "./src/main.py" ]
