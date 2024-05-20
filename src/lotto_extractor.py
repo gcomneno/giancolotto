@@ -100,55 +100,65 @@ class LottoExtractor:
             if not ruota_specifica or ruota == ruota_specifica:
                 print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}", end="\t")
                 print(f"{ruota.ljust(9)}", end="\t")
+
+                # Inizializza il contatore per i numeri evidenziati in rosso
+                numeri_rossi_count = 0
+            
                 for numero in numeri:
                     # Verifica se il numero è tra quelli da evidenziare
                     if numero in self.numeri_evidenziati:
                         # Evidenzia il numero con un colore rosso
-                        print(Fore.RED + f"{numero:02d}", end="\t")
+                        print(Fore.RED + f"{numero:02d}", end="\t")                        
+                        # Incrementa il contatore dei numeri evidenziati in rosso
+                        numeri_rossi_count += 1  
                     else:
                         print(Fore.WHITE + f"{numero:02d}", end="\t")
 
-                # Vai a capo alla fine della riga
-                print(Style.RESET_ALL)
+                # Stampa il conteggio dei numeri evidenziati in rosso per questa riga
+                print(Style.RESET_ALL + f"\t{numeri_rossi_count}")
 
     def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader):
-        ruota_specifica = self.config['Scraping']['ruota']
+        ruota_specifica = self.config['Scraping'].get('ruota')
+        
         if not ruota_specifica or printHeader:
-            print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
-            print("===========================================================================")
+            headers = "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)])
+            print(f"\nEstrazione\t\tRUOTA\t\t{headers}")
+            print("=" * 80)
+        
+        consecutive_reds_count = 0
         
         for ruota, numeri in numeri_per_ruota.items():
             if not ruota_specifica or ruota == ruota_specifica:
-                print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}", end="\t")
-                print(f"{ruota.ljust(9)}", end="\t")
+                rosso_count = 0
+                print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}\t{ruota.ljust(9)}\t", end="")
+                
                 for numero in numeri:
-                    if numero < 10:
-                        # Aggiungi uno zero davanti al numero e crea una lista di cifre
-                        cifre = [0, numero]
-                    else:
-                        # Altrimenti, crea una lista di cifre normalmente
-                        cifre = [int(cifra) for cifra in str(numero)]
-                        
+                    # Crea una lista di cifre per il numero, aggiungendo uno zero iniziale se necessario.
+                    cifre = [0, numero] if numero < 10 else [int(cifra) for cifra in str(numero)]
+                    
+                    previous_was_red = False  # Reset for each new number
                     for i, cifra in enumerate(cifre, start=1):
-                        # Verifica se la cifra è tra quelle da evidenziare
+                        # Evidenzia la cifra se è nella lista delle cifre evidenziate.
                         if cifra in self.cifre_evidenziate:
-                            # Evidenzia la cifra con un colore rosso
                             print(Fore.RED + str(cifra), end="")
+                            rosso_count += 1
+                            if previous_was_red:
+                                consecutive_reds_count += 1
+                            previous_was_red = True
                         else:
                             print(Fore.WHITE + str(cifra), end="")
-
-                        # Aggiungi un tabulatore ogni due cifre
+                            previous_was_red = False
+                        
                         if i % 2 == 0:
                             print("\t", end="")
-
-                    # Aggiungi un ritorno a capo dopo 10 cifre
-                    if i % 10 == 0:
+                    
+                    if len(cifre) % 10 == 0:
                         print()
                     else:
-                        print("", end="")
-
-                # Assicurati di andare a capo alla fine del ciclo
-                print(Style.RESET_ALL)
+                        print(" ", end="")
+                
+                # Stampa il conteggio delle cifre rosse e assicurati di andare a capo
+                print(f"{Style.RESET_ALL}\t{rosso_count} ({consecutive_reds_count})")
 
     def stampa_collezioni(self):
         # Verifica se è abilitata la persistenza
