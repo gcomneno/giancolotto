@@ -90,13 +90,14 @@ class LottoExtractor:
             print("Numero estrazione non valido.")
             return None, None, None
 
-    def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, printHeader):
+    def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
         ruota_specifica = self.config['Scraping']['ruota']
         if not ruota_specifica or printHeader:
             print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
             print("===========================================================================")
 
         for ruota, numeri in numeri_per_ruota.items():
+
             if not ruota_specifica or ruota == ruota_specifica:
                 print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}", end="\t")
                 print(f"{ruota.ljust(9)}", end="\t")
@@ -115,9 +116,12 @@ class LottoExtractor:
                         print(Fore.WHITE + f"{numero:02d}", end="\t")
 
                 # Stampa il conteggio dei numeri evidenziati in rosso per questa riga
-                print(Style.RESET_ALL + f"\t{numeri_rossi_count}")
+                print(Style.RESET_ALL + f"\t<{numeri_rossi_count}>", end="\t")
 
-    def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader):
+                # Stampa il numero cardinale dell'estrazione
+                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "")
+
+    def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
         ruota_specifica = self.config['Scraping'].get('ruota')
         
         if not ruota_specifica or printHeader:
@@ -158,8 +162,11 @@ class LottoExtractor:
                         print(" ", end="")
                 
                 # Stampa il conteggio delle cifre rosse e assicurati di andare a capo
-                print(f"{Style.RESET_ALL}\t{rosso_count} ({consecutive_reds_count})")
+                print(f"{Style.RESET_ALL}\t#{rosso_count} <{consecutive_reds_count}>", end="\t")
 
+                 # Stampa il numero cardinale dell'estrazione
+                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "")
+    
     def stampa_collezioni(self):
         # Verifica se è abilitata la persistenza
         if self.config.getboolean('Persistence', 'attiva'):

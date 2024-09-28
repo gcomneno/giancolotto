@@ -27,8 +27,13 @@ if __name__ == "__main__":
     if filtro not in ['numeri', 'cifre']:
         filtro = 'numeri'
 
+    # Previsionale ? (Ignora l'ultimissima estrazione)
+    previsionale = lotto_extractor.config.getboolean('Stats', 'previsionale')
+
     try:
         cifre_statistiche = Counter()
+
+        estrazione_count = -1 if previsionale else 0
 
         for estr in range(offset_estr, offset_estr + num_estr):
             refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr + 1)
@@ -38,14 +43,13 @@ if __name__ == "__main__":
 
             printHeader = estr == offset_estr
             if filtro == 'numeri':
-                lotto_extractor.print_results_numeri(refs, nomi_ruote, numeri_per_ruota, printHeader)
+                lotto_extractor.print_results_numeri(refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count)
             elif filtro == 'cifre':
-                lotto_extractor.print_results_cifre(refs, nomi_ruote, numeri_per_ruota, printHeader)
+                lotto_extractor.print_results_cifre(refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count)
+
+            estrazione_count += 1
 
             lotto_extractor.salva_su_mongodb('ESTR', refs, numeri_per_ruota)
-
-            # Previsionale ? (Ignora l'ultimissima estrazione)
-            previsionale = lotto_extractor.config.getboolean('Stats', 'previsionale')
 
             if (previsionale and not printHeader) or not previsionale:
                 # Calcola le statistiche delle presenze per ogni cifra            

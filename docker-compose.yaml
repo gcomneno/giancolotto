@@ -4,6 +4,8 @@ services:
   giancolotto:
     build:
       context: .
+#    volumes:
+#      - i:\\DATA\\MyWorkspace\\Progetti\\giancolotto:/app
     depends_on:
       - mongodb
     tty: true
@@ -13,4 +15,4 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./data/db:/data/db
+      - i:\\DATA\\MyWorkspace\\Progetti\\giancolotto\\data\\db:/data/db

@@ -9,5 +9,5 @@ up:	build
 down:
 	docker-compose down
 
-run:	up
-	docker-compose exec giancolotto python ./src/main.py
+run: up
+	docker-compose exec giancolotto python /app/src/main.py
