@@ -94,7 +94,7 @@ class LottoExtractor:
         ruota_specifica = self.config['Scraping']['ruota']
         if not ruota_specifica or printHeader:
             print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
-            print("===========================================================================")
+            print("=" * 80)
 
         for ruota, numeri in numeri_per_ruota.items():
 
@@ -119,7 +119,7 @@ class LottoExtractor:
                 print(Style.RESET_ALL + f"\t<{numeri_rossi_count}>", end="\t")
 
                 # Stampa il numero cardinale dell'estrazione
-                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "")
+                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "[U]")
 
     def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
         ruota_specifica = self.config['Scraping'].get('ruota')
@@ -165,7 +165,7 @@ class LottoExtractor:
                 print(f"{Style.RESET_ALL}\t#{rosso_count} <{consecutive_reds_count}>", end="\t")
 
                  # Stampa il numero cardinale dell'estrazione
-                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "")
+                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "[U]")
     
     def stampa_collezioni(self):
         # Verifica se è abilitata la persistenza
