@@ -13,10 +13,10 @@ fi
 # Recupera l'offset_estr dall'input utente (se non fornito, default a 1)
 offset_estr=${2:-1}
 
-# Loop per eseguire "ultimi.sh" un certo numero di volte in base all'offset
+# Loop per eseguire "ultima_su_tutte.sh" un certo numero di volte in base all'offset
 for ((i=offset_estr; i>=1; i--)); do
     # Esegui ultimi.sh con un parametro che simula l'offset
-    output=$(./ultimi.sh "$i")
+    output=$(./ultima_su_tutte.sh "$i")
 
     # Estrai i numeri tra parentesi quadre, rimuovi le parentesi, ordina e unisci con virgole
     numbers=$(echo "$output" | grep -o '\[[0-9]*\]' | tr -d '[]' | sort -n | paste -sd ',' -)
