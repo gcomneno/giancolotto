@@ -58,9 +58,13 @@ cifre=0,9
 
 ## Risorse Aggiuntive
 
-    Documentazione di MongoDB
-    Docker Documentation
-    ...
+## Esempi di utilizzo dei vari script
+./go.sh
+    Esegue il programma in Python (main) in base alla configurazione data nel file config.ini
+
+./cerca_su_tutte.sh "152|153|154|155|156" | ./classifica.sh | ./trova_mancanti.sh
+    Restituisce i numeri che ancora non sono usciti nelle estrazioni 152,153,154,155,156
+
 
 ## Licenza
 Questo progetto è distribuito con la licenza MIT.

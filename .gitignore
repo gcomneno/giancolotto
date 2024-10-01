@@ -3,8 +3,5 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Cartelle di ambiente virtuale
-venv/
-
-# Cartella dei dati
-data/db/
+database.md
+config.ini
