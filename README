@@ -62,9 +62,30 @@ cifre=0,9
 ./go.sh
     Esegue il programma in Python (main) in base alla configurazione data nel file config.ini
 
-./cerca_su_tutte.sh "152|153|154|155|156" | ./classifica.sh | ./trova_mancanti.sh
-    Restituisce i numeri che ancora non sono usciti nelle estrazioni 152,153,154,155,156
+./cerca_su_tutte.sh "[U]"
+    Visualizza l'Ultima Estrazione per intero
 
+./cerca_su_tutte.sh "[U]" | ./classifica.sh
+    Visualizza una tabella delle presenze dei numeri usciti nell'ultima estrazione, ordinato per presenza decrescente
+
+./cerca_su_tutte.sh "[U]" | ./classifica.sh | .trova_mancanti.sh
+    Visualizza i numeri che non sono usciti nell'ultima estrazione
+
+./cerca_su_tutte.sh "152|153|154|155|156" | ./classifica.sh | ./trova_mancanti.sh
+    Restituisce i numeri che ancora non sono usciti nelle estrazioni 152,153,154,155 e 156
+
+./cerca_su_tutte.sh "<2>|<3>"
+    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di ambo oppure di terno
+
+./cerca_su_tutte.sh "<4>" | sort -k1
+    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di quaterna ed ordina il risultato per estrazione decrescente
+
+./anni.sh 2023 | grep -E "<2>|<3>" | sort -k4,4r -k5,5r -k6,6r
+    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di ambo o terno del biennio 2023/2024 ed ordina il risultato per data decrescente (AA/MM/GG)
+
+./anni.sh 2000 2024 | grep "<3>" | sort -k1,2
+    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di terno negli ultimi 25 anni ed ordina il risultato per numero di 
+    estrazione crescente
 
 ## Licenza
 Questo progetto è distribuito con la licenza MIT.

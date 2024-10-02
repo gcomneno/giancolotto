@@ -65,7 +65,7 @@ class LottoExtractor:
 
     def parse_data(self):
         soup = BeautifulSoup(self.response.text, 'html.parser')
-        extractions = soup.find_all('article', class_='tabellaEstrazioni-arch')
+        extractions = soup.find_all('table', class_='tabellaEstrazioni-arch')
 
         if not extractions:
             raise ValueError("Nessuna estrazione trovata!")
@@ -87,7 +87,7 @@ class LottoExtractor:
 
             return main_references, nomi_ruote, numeri_per_ruota
         else:
-            print("Numero estrazione non valido.")
+            #print("Numero estrazione non valido.")
             return None, None, None
 
     def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
@@ -99,7 +99,7 @@ class LottoExtractor:
         for ruota, numeri in numeri_per_ruota.items():
 
             if not ruota_specifica or ruota == ruota_specifica:
-                print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}", end="\t")
+                print(f"n. {int(refs[0]):03d} del {int(refs[3]):04d}/{int(refs[2]):02d}/{int(refs[1]):02d}", end="\t")
                 print(f"{ruota.ljust(9)}", end="\t")
 
                 # Inizializza il contatore per i numeri evidenziati in rosso
@@ -108,12 +108,21 @@ class LottoExtractor:
                 for numero in numeri:
                     # Verifica se il numero è tra quelli da evidenziare
                     if numero in self.numeri_evidenziati:
-                        # Evidenzia il numero con un colore rosso
-                        print(Fore.RED + f"{numero:02d}", end="\t")                        
+                        try:
+                            # Evidenzia il numero con un colore rosso
+                            print(Fore.RED + f"{numero:02d}", end="\t")          
+                        except OSError as e:
+                            print(f"{numero:02d}", end="\t")
+                            pass
+              
                         # Incrementa il contatore dei numeri evidenziati in rosso
                         numeri_rossi_count += 1  
                     else:
-                        print(Fore.WHITE + f"{numero:02d}", end="\t")
+                        try:
+                            print(Fore.WHITE + f"{numero:02d}", end="\t")                       
+                        except OSError as e:
+                            print(f"{numero:02d}", end="\t")
+                            pass
 
                 # Stampa il conteggio dei numeri evidenziati in rosso per questa riga
                 print(Style.RESET_ALL + f"\t<{numeri_rossi_count}>", end="\t")
@@ -134,7 +143,7 @@ class LottoExtractor:
         for ruota, numeri in numeri_per_ruota.items():
             if not ruota_specifica or ruota == ruota_specifica:
                 rosso_count = 0
-                print(f"n. {refs[0]} del {refs[1]}/{refs[2]}/{refs[3]}\t{ruota.ljust(9)}\t", end="")
+                print(f"n. {int(refs[0]):03d} del {int(refs[3]):04d}/{int(refs[2]):02d}/{int(refs[1]):02d}\t{ruota.ljust(9)}\t", end="")
                 
                 for numero in numeri:
                     # Crea una lista di cifre per il numero, aggiungendo uno zero iniziale se necessario.
@@ -144,13 +153,21 @@ class LottoExtractor:
                     for i, cifra in enumerate(cifre, start=1):
                         # Evidenzia la cifra se è nella lista delle cifre evidenziate.
                         if cifra in self.cifre_evidenziate:
-                            print(Fore.RED + str(cifra), end="")
+                            try:
+                                print(Fore.RED + str(cifra), end="")
+                            except OSError as e:
+                                print(str(cifra), end="")
+                                pass
                             rosso_count += 1
                             if previous_was_red:
                                 consecutive_reds_count += 1
                             previous_was_red = True
                         else:
-                            print(Fore.WHITE + str(cifra), end="")
+                            try:
+                                print(Fore.WHITE + str(cifra), end="")
+                            except OSError as e:
+                                print(str(cifra), end="")
+                                pass
                             previous_was_red = False
                         
                         if i % 2 == 0:

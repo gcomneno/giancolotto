@@ -46,10 +46,7 @@ for ruota in "${ruote[@]}"; do
     sed -i "s/^numeri=.*/numeri=${numeri_per_ruota[$ruota]}/" "$config_file"
 
     # Esegui il programma Python e filtra l'output in base al punteggio ottenuto
-    python.exe ./src/main.py | grep "<2>"
-    python.exe ./src/main.py | grep "<3>"
-    python.exe ./src/main.py | grep "<4>"
-    python.exe ./src/main.py | grep "<5>" | grep -v "\[U\]"
+    python.exe ./src/main.py | grep -E "<2>|<3>|<4>|<5>" | grep -v "\[U\]"
 done
 
 # Ripristina il file di configurazione originale

@@ -1,7 +1,13 @@
+import sys
+import io
+
 from lotto_extractor import LottoExtractor
 from collections import Counter
 
 if __name__ == "__main__":
+
+    # Forza l'uso di UTF-8 come encoding di output
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
     lotto_extractor = LottoExtractor()
 
@@ -38,6 +44,10 @@ if __name__ == "__main__":
         for estr in range(offset_estr, offset_estr + num_estr):
             refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr + 1)
 
+            # Verifica se uno dei valori restituiti è None
+            if refs is None or nomi_ruote is None or numeri_per_ruota is None:
+                continue  # Passa all'iterazione successiva
+
             if estr == offset_estr:
                  prima_estrazione = numeri_per_ruota
 
@@ -61,27 +71,26 @@ if __name__ == "__main__":
         print()
 
         # Stampa le statistiche finali
-        print("Statistica delle cifre alla estraz.-1:")
-        print("Presenze\tCifra")
-        for cifra, presenze in cifre_statistiche.most_common():
-            print(f"{presenze}\t\t{cifra}")
-
-        print()
+#        print("Statistica delle cifre alla estraz.-1:")
+#        print("Presenze\tCifra")
+#        for cifra, presenze in cifre_statistiche.most_common():
+#            print(f"{presenze}\t\t{cifra}")
+#        print()
 
         # Genera le accopiamenti di presenza delle cifre in base alla classifica corrente
-        associations = lotto_extractor.generate_associations(cifre_statistiche, prima_estrazione)
+#        associations = lotto_extractor.generate_associations(cifre_statistiche, prima_estrazione)
 
         # Sala le associazioni appena generate
-        lotto_extractor.salva_su_mongodb('ASSO', refs, associations, is_association=True)
+#        lotto_extractor.salva_su_mongodb('ASSO', refs, associations, is_association=True)
 
         # Formatta le associazioni per l'output a video
-        formatted_associations = lotto_extractor.format_associations(associations)
+#        formatted_associations = lotto_extractor.format_associations(associations)
 
         # Stampa tutte le coppie relazionate su una singola riga
-        for ruota, assoc_list in formatted_associations.items():
-            print("|".join("".join(pair) for pair in zip(*[iter(assoc_list)]*2)))
+#        for ruota, assoc_list in formatted_associations.items():
+#            print("|".join("".join(pair) for pair in zip(*[iter(assoc_list)]*2)))
 
-        print()
+#        print()
 
         # Chiamata alla funzione per caricare e calcolare la classifica delle associazioni da DB
         # ruota_specifica = lotto_extractor.ottieni_ruota_specifica()
