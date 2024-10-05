@@ -94,8 +94,11 @@ cifre=0,9
 ./cerca_su_tutte.sh "n. " | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
     Come sopra ma lo fa per l\'intero anno su tutte le ruote
 
-./run_strategy.sh 0 31 2 2 | grep "Successo" | awk '{print $1, $5}' | sort -k2,2nr -k1,1 | grep -v " 0"
+./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{print $1, $5}' | sort -k2,2nr -k1,1 | grep -v " 0"
     Verifica la tua strategia di gioco (in strategy.py) per tutti i valori di fascia nel database
+
+./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{ok += $5; ko += $8} END {if (ko > 0) {ratio = ok / ko} else {ratio = "Inf"}; print "Totale OK:", ok, "Totale KO:", ko, "Rapporto:", ratio}'
+    Come sopra ma analizzando il rapporto da successi e fallimenti della strategia
 
 ## Licenza
 Questo progetto è distribuito con la licenza MIT.
