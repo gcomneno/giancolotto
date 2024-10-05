@@ -1,7 +1,7 @@
 ## Giancolotto
 
 ## Descrizione
-Giancolotto è un'applicazione Python per estrarre e analizzare dati delle estrazioni al gioco del lotto.
+Giancolotto è un\'applicazione Python per estrarre e analizzare dati delle estrazioni al gioco del lotto.
 
 ## Dipendenze
 - Python 3.x
@@ -13,7 +13,7 @@ Giancolotto è un'applicazione Python per estrarre e analizzare dati delle estra
    git clone https://github.com/gcomneno/giancolotto.git
    cd giancolotto
 
-2. Costruisci l'immagine Docker
+2. Costruisci l\'immagine Docker
     make build
 
 3. Avvia i container:
@@ -37,7 +37,7 @@ cd /I/DATA/MyWorkspace/Progetti/giancolotto
 winpty make run
 
 ## Configurazione
-Modifica il file config.ini per personalizzare la configurazione dell'applicazione.
+Modifica il file config.ini per personalizzare la configurazione dell\'applicazione.
 
 Esempio
 
@@ -63,13 +63,13 @@ cifre=0,9
     Esegue il programma in Python (main) in base alla configurazione data nel file config.ini
 
 ./cerca_su_tutte.sh "[U]"
-    Visualizza l'Ultima Estrazione per intero
+    Visualizza l\'Ultima Estrazione per intero
 
 ./cerca_su_tutte.sh "[U]" | ./classifica.sh
-    Visualizza una tabella delle presenze dei numeri usciti nell'ultima estrazione, ordinato per presenza decrescente
+    Visualizza una tabella delle presenze dei numeri usciti nell\'ultima estrazione, ordinato per presenza decrescente
 
 ./cerca_su_tutte.sh "[U]" | ./classifica.sh | .trova_mancanti.sh
-    Visualizza i numeri che non sono usciti nell'ultima estrazione
+    Visualizza i numeri che non sono usciti nell\'ultima estrazione
 
 ./cerca_su_tutte.sh "152|153|154|155|156" | ./classifica.sh | ./trova_mancanti.sh
     Restituisce i numeri che ancora non sono usciti nelle estrazioni 152,153,154,155 e 156
@@ -86,6 +86,16 @@ cifre=0,9
 ./anni.sh 2000 2024 | grep "<3>" | sort -k1,2
     Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di terno negli ultimi 25 anni ed ordina il risultato per numero di 
     estrazione crescente
+
+./go.sh | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
+    Ti prende la colonna con il numero di cifre uscite (vale solo quando il filtro è impostato a 'cifre' ovviamente!) e te la
+    scrive come fosse un array, su una sola riga e separati dalla virgola. Utile per darla in pasto a pcond.py !
+
+./cerca_su_tutte.sh "n. " | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
+    Come sopra ma lo fa per l\'intero anno su tutte le ruote
+
+./run_strategy.sh 0 31 2 2 | grep "Successo" | awk '{print $1, $5}' | sort -k2,2nr -k1,1 | grep -v " 0"
+    Verifica la tua strategia di gioco (in strategy.py) per tutti i valori di fascia nel database
 
 ## Licenza
 Questo progetto è distribuito con la licenza MIT.

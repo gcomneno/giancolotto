@@ -66,6 +66,9 @@ class LottoExtractor:
     def parse_data(self):
         soup = BeautifulSoup(self.response.text, 'html.parser')
         extractions = soup.find_all('table', class_='tabellaEstrazioni-arch')
+        # NOTA:
+        # per l'url di scraping 'https://www.estrazionedellotto.it/ultime-estrazioni-lotto' invece,
+        # in lotto_extractor.py alla linea 68 il primo parametro alla find_all deve essere 'article'
 
         if not extractions:
             raise ValueError("Nessuna estrazione trovata!")
