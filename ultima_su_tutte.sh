@@ -2,11 +2,7 @@
 
 # Ricevi l'offset dal comando o imposta un valore predefinito
 offset=${1:-0}
-
-# Decrementa l'offset solo se è stato fornito un valore diverso da 0
-if [ "$1" ]; then
-    offset=$((offset - 1))
-fi
+num_estr=${2:-9}
 
 # Elenco delle ruote del Lotto (escludendo "Nazionale")
 ruote=("Bari" "Cagliari" "Firenze" "Genova" "Milano" "Napoli" "Palermo" "Roma" "Torino" "Venezia")
@@ -26,6 +22,7 @@ sed -i "s/^previsionale=.*/previsionale=True/" "$config_file"
 sed -i "s/^numeri=.*/numeri=/" "$config_file"
 sed -i "s/^cifre=.*/cifre=/" "$config_file"
 sed -i "s/^offset_estr=.*/offset_estr=$offset/" "$config_file"
+sed -i "s/^num_estr=.*/num_estr=$num_estr/" "$config_file"
 
 # Ciclo su ogni ruota e richiama il programma per conservare l'ultimissima estrazione
 for ruota in "${ruote[@]}"; do

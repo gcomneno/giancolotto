@@ -1,22 +1,28 @@
 #!/bin/bash
 
+# Controlla se sono stati forniti argomenti
+if [ "$#" -ne 3 ]; then
+    echo "Utilizzo: $0 <offset_finale> <num_estr> {reset}"
+    exit 1
+fi
+
 # Script per l'aggiornamento del database in base all'analisi di più estrazioni
 echo "Inizio esecuzione: $(date)"
 
-# Controlla se l'utente ha passato il parametro "--reset"
-if [[ "$1" == "--reset" ]]; then
-    # Se è stato usato --reset, svuota il file database.md
+# Ricevi l'offset e num_estr dal comando o imposta un valore predefinito
+offset_estr=${1:-0}
+num_estr=${2:-9}
+
+# Controlla se l'utente ha passato il parametro "reset"
+if [[ "$3" == "reset" ]]; then
     > database.md
     echo "Il file database.md è stato resettato."
 fi
 
-# Recupera l'offset_estr dall'input utente (se non fornito, default a 1)
-offset_estr=${2:-1}
-
 # Loop per eseguire "ultima_su_tutte.sh" un certo numero di volte in base all'offset
-for ((i=offset_estr; i>=1; i--)); do
+for ((i=offset_estr; i>=0; i--)); do
     # Esegui ultimi.sh con un parametro che simula l'offset
-    output=$(./ultima_su_tutte.sh "$i")
+    output=$(./ultima_su_tutte.sh "$i" "$num_estr")
 
     # Estrai i numeri tra parentesi quadre, rimuovi le parentesi, ordina e unisci con virgole
     numbers=$(echo "$output" | grep -o '\[[0-9]*\]' | tr -d '[]' | sort -n | paste -sd ',' -)
