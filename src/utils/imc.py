@@ -63,7 +63,12 @@ def main():
     args = parser.parse_args()
 
     risultato = insieme_minimo_di_copertura(args.offset, args.limit)
-    print(f"Insieme minimo di copertura: {risultato}")
+
+    # Formattare i numeri per essere stampati con due cifre
+    formatted_result = ' '.join(f'{num:02}' for num in risultato)
+
+    # Stampa il risultato formattato
+    print(f"Insieme minimo di copertura: {formatted_result}")
 
 if __name__ == '__main__':
     main()

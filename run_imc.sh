@@ -1,23 +1,25 @@
 #!/bin/bash
 
 # Verifica che siano stati passati due argomenti
-if [ $# -ne 2 ]; then
-  echo "Utilizzo: $0 <numero_iterazioni> <limit>"
+if [ $# -ne 3 ]; then
+  echo "Utilizzo: $0 <numero_iterazioni> <offset> <limit>"
   exit 1
 fi
 
 # Numero di iterazioni (quante volte vuoi eseguire il programma)
 iterations=$1
 
-# Limite di righe da processare
-limit=$2
+# Prima riga da processare
+starting_offset=$2
 
-# Loop per incrementare l'offset e chiamare il programma Python
-for (( offset=0; offset<$iterations; offset++ ))
+# Limite di righe da processare
+limit=$3
+
+# Loop per incrementare l'offset e chiamare il programma Python IMC
+for (( offset=$starting_offset; offset<$starting_offset + $iterations; offset++ ))
 do
   # Cattura l'output del programma Python
   result=$(python.exe ./src/utils/imc.py --offset $offset --limit $limit)
 
-  # Formattare l'output come richiesto
-  echo "[$offset,$limit] => $result"
+  echo "[$offset,$limit] $result"
 done
