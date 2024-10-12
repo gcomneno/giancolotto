@@ -20,7 +20,7 @@ backup_config="${config_file}.all.bak"
 cp "$config_file" "$backup_config"
 
 # Inizializza il file di configurazione prima dell'elaborazione
-sed -i "s/^previsionale=.*/previsionale=True/" "$config_file"
+#sed -i "s/^previsionale=.*/previsionale=False/" "$config_file"
 
 # Elenco delle ruote del Lotto (escludendo "Nazionale")
 ruote=("Bari" "Cagliari" "Firenze" "Genova" "Milano" "Napoli" "Palermo" "Roma" "Torino" "Venezia")

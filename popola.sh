@@ -1,21 +1,22 @@
 #!/bin/bash
 
-# Controlla se sono stati forniti argomenti
-if [ "$#" -ne 3 ]; then
-    echo "Utilizzo: $0 <offset_finale> <num_estr> {reset}"
+# Controlla se sono stati forniti al massimo 3 argomenti
+if [ "$#" -gt 3 ]; then
+    echo "Utilizzo: $0 <offset_finale> <num_estr> [reset]"
     exit 1
 fi
 
 # Script per l'aggiornamento del database in base all'analisi di più estrazioni
 echo "Inizio esecuzione: $(date)"
 
-# Ricevi l'offset e num_estr dal comando o imposta un valore predefinito
-offset_estr=${1:-0}
-num_estr=${2:-9}
+# Ricevi l'offset e num_estr dal comando o imposta valori predefiniti
+offset_estr=${1:-0}  # Se il primo argomento è omesso, usa 0
+num_estr=${2:-33}     # Se il secondo argomento è omesso, usa 33
 
 # Controlla se l'utente ha passato il parametro "reset"
-if [[ "$3" == "reset" ]]; then
-    > database.md
+if [ "$#" -eq 3 ] && [[ "$3" == "reset" ]]; then
+    # Resetta il file database.md
+    : > database.md
     echo "Il file database.md è stato resettato."
 fi
 

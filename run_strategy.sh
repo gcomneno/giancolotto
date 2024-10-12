@@ -2,7 +2,7 @@
 
 # Controlla se sono stati forniti argomenti
 if [ "$#" -ne 4 ]; then
-    echo "Utilizzo: $0 <numero_iniziale> <numero_finale> <min_consecutive>  <max_tentativi>"
+    echo "Utilizzo: $0 <numero_iniziale> <numero_finale> <min_consecutive> <max_tentativi>"
     exit 1
 fi
 
