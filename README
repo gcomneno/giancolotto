@@ -62,7 +62,7 @@ cifre=0,9
 ./go.sh
     Esegue il programma in Python (main) in base alla configurazione data nel file config.ini
 
-./cerca_su_tutte.sh "[U]"
+./cerca_su_tutte.sh "[U]" (oppure "[0]" se il valore di previsionale è false!)
     Visualizza l\'Ultima Estrazione per intero
 
 ./cerca_su_tutte.sh "[U]" | ./classifica.sh

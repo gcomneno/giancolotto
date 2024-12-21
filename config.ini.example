@@ -1,21 +1,24 @@
 [Scraping]
-url=https://www.estrazionedellotto.it/ultime-estrazioni-lotto
-# Numero di estrazioni da recuperare (=1, analisi; =2, verifica)
+url=https://www.estrazionedellotto.it/risultati/archivio-lotto-2024
+
+# Numero di estrazioni da recuperare (almeno 1 per: analisi; almeno 2 per: verifica; =366, per tutte)
 num_estr=33
+
 # Numero di estrazioni iniziali da saltare, a partire dall'ultima (=0, analisi/verifica)
 offset_estr=0
+
 # Ruota specifica (lascia vuoto per tutte le ruote)
 # Bari Cagliari Firenze Genova Milano Napoli Palermo Roma Torino Venezia
 ruota=Bari
 
 [Filtering]
 filtro=numeri
-numeri=01,02,03,04,05,06,07,08,09
+numeri=
 cifre=
 
 [Stats]
 # Escludi l'ultima estrazione dai calcoli statistici? (=False, pre-analisi; =True, post-verifica)
-previsionale=False
+previsionale=True
 
 [Persistence]
 attiva=False
