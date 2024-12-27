@@ -1,32 +1,30 @@
 ## Giancolotto
-
-## Descrizione
 Giancolotto è un\'applicazione Python per estrarre e analizzare dati delle estrazioni al gioco del lotto.
 
 ## Dipendenze
 - Python 3.x
-- Docker
-- MongoDB
+- Docker    [opzionale]
+- MongoDB   [opzionale]
 
 ## Installazione
 1. Clona il repository:
    git clone https://github.com/gcomneno/giancolotto.git
    cd giancolotto
 
-2. Costruisci l\'immagine Docker
+2. Costruisci l\'immagine Docker        [opzionale]
     make build
 
-3. Avvia i container:
+3. Avvia i container:                   [opzionale]
     make up
 
-4. Arresta e rimuove i container Docker
+4. Arresta e rimuove i container Docker [opzionale]
     make down
 
-## Utilizzo
-## Verifica che i container siano in esecuzione:
+## Utilizzo con Docker
+### Verifica che i container siano in esecuzione:
     docker-compose ps
 
-## Esegui l'applicazione nel container
+### Esegui l'applicazione nel container
     make run
     ...
     docker-compose exec giancolotto python ./src/main.py
@@ -39,26 +37,30 @@ winpty make run
 ## Configurazione
 Modifica il file config.ini per personalizzare la configurazione dell\'applicazione.
 
-Esempio
-
-[Scraping]
-# Il sito dal quale recuperare le estrazioni del Lotto
+## [Scraping] Il sito dal quale recuperare le estrazioni del Lotto è:
 url=https://www.estrazionedellotto.it/ultime-estrazioni-lotto
 
-# Numero di estrazioni da recuperare
+# Imposta il Numero di estrazioni da recuperare
 num_estr=1
 
-# Ruota specifica (lascia vuoto per tutte le ruote)
+# Imposta Ruota specifica (lascia vuoto per tutte le ruote)
+# Bari Cagliari Firenze Genova Milano Napoli Palermo Roma Torino Venezia
 ruota=
 
-[Filtering]
-filtro=cifre
+# [Filtering]
+filtro=per numeri o cifre?
 numeri=8,11
 cifre=0,9
 
 ## Risorse Aggiuntive
+E\' corredata da svariati script Python automatizzati dai relativi script di Shell che  utilizzano in maniera mirata le singole funzionalità in base allo specifico obiettivo:
+- frequenze.py
+- filotti.py
+- imc.py
+- repetita.py
+- strategy.py
 
-## Esempi di utilizzo dei vari script
+### Esempi di utilizzo dei vari script di Shell
 ./go.sh
     Esegue il programma in Python (main) in base alla configurazione data nel file config.ini
 
@@ -99,6 +101,51 @@ cifre=0,9
 
 ./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{ok += $5; ko += $8} END {if (ko > 0) {ratio = ok / ko} else {ratio = "Inf"}; print "Totale OK:", ok, "Totale KO:", ko, "Rapporto:", ratio}'
     Come sopra ma analizzando il rapporto da successi e fallimenti della strategia
+
+### Script frequenze.py
+Lo script `frequenze.py` permette di calcolare e analizzare la frequenza di numeri estratti in un dataset. Offre funzionalità avanzate come la visualizzazione dei dati in formato testuale o grafico e il supporto per filtri specifici.
+
+#### Esempi di utilizzo:
+- **Modalità testuale:**
+
+```bash
+python ./src/utils/frequenze.py --mode text
+```
+Output:
+```plaintext
+Presenze dei Numeri:
+Numero 20: 54 presenze
+Numero 24: 51 presenze
+Numero 06: 49 presenze
+...
+
+Frequenza per Fascia di Decine:
+ Fascia di Decine  Frequenza  Percentuale
+       20-29         100        25.00%
+       10-19          80        20.00%
+...
+```
+- **Modalità grafica:**
+
+```bash
+python ./src/utils/frequenze.py --mode graphic
+```
+Visualizza due grafici:
+1. Frequenza dei numeri.
+2. Frequenza per fasce di decine.
+
+- **Filtrare i risultati con `grep` (Linux):**
+Filtrare i numeri nella fascia 20-29:
+```bash
+python ./src/utils/frequenze.py | grep -E 'Numero 2[0-9]:'
+```
+Output:
+```plaintext
+Numero 20: 54 presenze
+Numero 24: 51 presenze
+Numero 22: 48 presenze
+...
+```
 
 ## Licenza
 Questo progetto è distribuito con la licenza MIT.
