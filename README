@@ -82,6 +82,15 @@ E\' corredata da svariati script Python automatizzati dai relativi script di She
 ./cerca_su_tutte.sh "<4>" | sort -k1
     Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di quaterna ed ordina il risultato per estrazione decrescente
 
+./cerca_su_tutte.sh "[4]" | awk '{print $6, $7, $8, $9, $10}'
+    Ricerca soltanto la fascia estrattiva 4 (quintultima estrazione partendo da 0) su tutte le ruote e visualizza solo i 5 numeri estratti
+
+./cerca_su_tutte.sh "[4]|[6]"
+    Ricerca sia la fascia estrattiva 4 che la 6 su tutte le ruote e visualizza tutte le informazioni
+
+./cerca_su_tutte.sh "[4]" | awk '{print $6, $7, $8, $9, $10}' | tr ' ' ',' | tr ',' '\n' | sort -n | uniq | paste -sd ','
+    Ricerca la fascia 4 su tutte le ruote e visualizza i numeri come un array univoco separato da virgola
+
 ./anni.sh 2023 | grep -E "<2>|<3>" | sort -k4,4r -k5,5r -k6,6r
     Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di ambo o terno del biennio 2023/2024 ed ordina il risultato per data decrescente (AA/MM/GG)
 
@@ -101,6 +110,10 @@ E\' corredata da svariati script Python automatizzati dai relativi script di She
 
 ./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{ok += $5; ko += $8} END {if (ko > 0) {ratio = ok / ko} else {ratio = "Inf"}; print "Totale OK:", ok, "Totale KO:", ko, "Rapporto:", ratio}'
     Come sopra ma analizzando il rapporto da successi e fallimenti della strategia
+
+### Script imc.py
+Lo script `imc.py` permette di calcolare l'Insieme Minimo di Copertura di un dataset.
+Far riferimeno al manuale utente: IMC.docx
 
 ### Script frequenze.py
 Lo script `frequenze.py` permette di calcolare e analizzare la frequenza di numeri estratti in un dataset. Offre funzionalità avanzate come la visualizzazione dei dati in formato testuale o grafico e il supporto per filtri specifici.
