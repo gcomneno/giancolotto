@@ -7,7 +7,7 @@ from collections import Counter
 from colorama import init, Fore, Back, Style
 
 class LottoExtractor:
-    def __init__(self, config_file='config.ini'):
+    def __init__(self, config_file='../config.ini'):
         # Initialize Colorama
         init()
 

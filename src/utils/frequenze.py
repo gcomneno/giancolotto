@@ -119,7 +119,7 @@ def parse_arguments():
 
 def main():
     # Parametri di configurazione
-    file_path = 'database.md'
+    file_path = '../dataset/database.2025.md'
     decade_ranges = [(i, i + 9) for i in range(0, 80, 10)]
 
     # Analizza gli argomenti della riga di comando

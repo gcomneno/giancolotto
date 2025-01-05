@@ -1,9 +1,9 @@
 from itertools import combinations
 
-# Carica i dati dal file database.md
+# Carica i dati dal dataset
 data = []
 
-with open('database.md', 'r') as file:
+with open('../dataset/database.2025.md', 'r') as file:
     for line in file:
         numbers = list(map(int, line.strip().split(',')))
         data.append(numbers)

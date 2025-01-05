@@ -1,9 +1,13 @@
 def strategy(number: int, min_consecutive: int, max_attempts: int):
+    # Carica i dati dal dataset
     data = []
-
-    with open('database.md', 'r') as file:
+    with open('../dataset/database.2025.md', 'r') as file:
         for line in file:
-            numbers = list(map(int, line.strip().split(',')))
+            parts = line.strip().split(',')
+            # parts[0] = "Palermo" 
+            numeri_str = parts[1:]  # ignore ruota
+
+            numbers = list(map(int, numeri_str))
             data.append(numbers)
 
     consecutive_presences = 0

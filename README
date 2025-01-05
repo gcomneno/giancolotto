@@ -105,6 +105,12 @@ E\' corredata da svariati script Python automatizzati dai relativi script di She
 ./cerca_su_tutte.sh "n. " | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
     Come sopra ma lo fa per l\'intero anno su tutte le ruote
 
+./ultima_su_tutte.sh
+    Verifica le sorti che avrebbe ottenuto una specifica cinquina appena estratta nel passato (dall'ambo in su!)
+
+./ultima_su_tutte.sh | tee -a risultati_ultima_su_tutte.log
+    Come sopra ma inviando l'output ad un file di log
+
 ./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{print $1, $5}' | sort -k2,2nr -k1,1 | grep -v " 0"
     Verifica la tua strategia di gioco (in strategy.py) per tutti i valori di fascia nel database
 

@@ -14,8 +14,8 @@ def read_database_from_file(filename):
         database = [list(map(int, line.strip().split(','))) for line in lines if line.strip()]
     return database
 
-# Leggiamo il file database.md
-database = read_database_from_file('database.md')
+# Leggiamo il dataset
+database = read_database_from_file('../dataset/database.2025.md')
 
 # Controlliamo quante volte la tendenza "Repetita Iuvant" si è verificata
 repetita_count = 0

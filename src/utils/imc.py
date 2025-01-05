@@ -4,12 +4,15 @@ from collections import defaultdict
 
 # Funzione principale che accetta offset e limit
 def insieme_minimo_di_copertura(offset, limit):
-    # Carica i dati dal file database.md
+    # Carica i dati dal dataset
     data = []
-    
-    with open('database.md', 'r') as file:
+    with open('./dataset/database.2025.md', 'r') as file:
         for line in file:
-            numbers = list(map(int, line.strip().split(',')))
+            parts = line.strip().split(',')
+            # parts[0] = "Palermo" 
+            numeri_str = parts[1:]  # ignore ruota
+
+            numbers = list(map(int, numeri_str))
             data.append(numbers)
 
     total_rows = len(data)
