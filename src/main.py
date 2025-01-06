@@ -11,79 +11,103 @@ if __name__ == "__main__":
 
     lotto_extractor = LottoExtractor()
 
-    # Imposta il numero di estrazioni da recuperare. Default = 1
+    # 1) Lettura dei parametri di configurazione
     try:
         num_estr = int(lotto_extractor.config['Scraping'].get('num_estr', 1))
     except ValueError:
         num_estr = 1
 
-    # Imposta l'offset di estrazioni da saltare. Default = 0
     try:
         offset_estr = int(lotto_extractor.config['Scraping'].get('offset_estr', 0))
     except ValueError:
         offset_estr = 0
 
-    # Imposta il tipo di evidenziamento (numeri oppure cifre). Default = numeri
     filtro = lotto_extractor.config.get('Filtering', 'filtro', fallback='numeri')
-
-    # Verifica che il tipo di evidenziamento sia valido
     if filtro not in ['numeri', 'cifre']:
         filtro = 'numeri'
 
-    # Previsionale ? (Ignora l'ultimissima estrazione)
-    previsionale = lotto_extractor.config.getboolean('Stats', 'previsionale')
+    previsionale = lotto_extractor.config.getboolean('Stats', 'previsionale', fallback=False)
 
+    # 2) Gestione contatori e statistiche (solo per 'cifre')
+    cifre_statistiche = Counter()
+
+    # 2.1) num_estr_from_config: indica quante estrazioni vogliamo analizzare (999 = tutte?)
+    num_estr_from_config = 999
+
+    # 2.2) total_available: quante estrazioni sono effettivamente presenti nella lista self.extractions
+    total_available = len(lotto_extractor.extractions)
+
+    # 2.3) num_estr: prendiamo il minimo tra “desiderato” e “disponibile”,
+    #    così evitiamo di chiamare extraction(...) su indici che non esistono
+    num_estr = min(num_estr_from_config, total_available)
+
+    # 3) Calcoliamo il “fine range” in base a previsionale
+    #    Se previsionale=True => ignora l'ultimissima estrazione => end -= 1
+    start = offset_estr + 1
+    end   = offset_estr + num_estr
+
+    # 4) Loop principale sulle estrazioni
+    #    Se previsionale=True, l'ultima iterazione non verrà inclusa in range(...)
+    estrazione_count = 0
     try:
-        cifre_statistiche = Counter()
+        for estr in range(start, end + 1):
+            # Richiama extraction per ottenere i dati dell'estrazione
+            refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr)
 
-        estrazione_count = -1 if previsionale else 0
-
-        for estr in range(offset_estr, offset_estr + num_estr):
-            refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr + 1)
-
-            # Verifica se uno dei valori restituiti è None
+            # Se la chiamata non restituisce dati validi, saltiamo questa iterazione
             if refs is None or nomi_ruote is None or numeri_per_ruota is None:
-                continue  # Passa all'iterazione successiva
+                continue
 
-            if estr == offset_estr:
-                 prima_estrazione = numeri_per_ruota
+            # Stampa l'header solo nella prima iterazione
+            printHeader = (estr == 1)
 
-            printHeader = estr == offset_estr
+            # Stampa dei risultati in base al filtro
             if filtro == 'numeri':
-                lotto_extractor.print_results_numeri(refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count)
-            elif filtro == 'cifre':
-                lotto_extractor.print_results_cifre(refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count)
+                lotto_extractor.print_results_numeri(
+                    refs,
+                    nomi_ruote,
+                    numeri_per_ruota,
+                    printHeader,
+                    estrazione_count
+                )
+            else:  # filtro == 'cifre'
+                lotto_extractor.print_results_cifre(
+                    refs,
+                    nomi_ruote,
+                    numeri_per_ruota,
+                    printHeader,
+                    estrazione_count
+                )
+
+                # Aggiorna le statistiche per cifre
+                if not previsionale or (previsionale and not printHeader):
+                    presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
+                    cifre_statistiche.update(dict(presenze_estr))
 
             estrazione_count += 1
 
-            if (previsionale and not printHeader) or not previsionale:
-                # Calcola le statistiche delle presenze per ogni cifra            
-                presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
-
-                # Aggiorna le statistiche delle cifre con quelle dell'estratto corrente
-                cifre_statistiche.update(dict(presenze_estr))
-                
+        # 5) Fine loop: riga vuota per separare
         print()
 
+        # 6) Se stiamo analizzando cifre, stampa le statistiche finali
         if filtro == 'cifre':
-            # Stampa le statistiche finali
-            print("Statistica delle cifre alla estraz.-1:")
-            print("Presenze\tCifra")
+            print("=====================")
+            print(" C I F R O L O T T O ")
+            print("=====================")
+            print("Cifra\t\tPres.")
             for cifra, presenze in cifre_statistiche.most_common():
-                print(f"{presenze}\t\t{cifra}")
+                print(f"{cifra}\t\t{presenze}")
             print()
 
-            # Genera le accopiamenti di presenza delle cifre in base alla classifica corrente
-            associations = lotto_extractor.generate_associations(cifre_statistiche, prima_estrazione)
+            # Richiama extraction(1) per ottenere i dati dell'ultima estrazione (ignorata quando previsionale=True)
+            if previsionale:
+                refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(1)
+                pairings = lotto_extractor.generate_pairings(cifre_statistiche, numeri_per_ruota)
+                formatted_pairings = lotto_extractor.format_pairings(pairings)
 
-            # Formatta le associazioni per l'output a video
-            formatted_associations = lotto_extractor.format_associations(associations)
-
-            # Stampa tutte le coppie relazionate su una singola riga
-            for ruota, assoc_list in formatted_associations.items():
-                print(" ".join("|".join(pair) for pair in zip(*[iter(assoc_list)]*2)))
-
-            print()
+                for ruota, assoc_list in formatted_pairings.items():
+                    print(" ".join("|".join(pair) for pair in zip(*[iter(assoc_list)]*2)))
+                    print()
 
     except Exception as e:
         print(f"Errore: {e}")

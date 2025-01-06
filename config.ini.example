@@ -17,7 +17,7 @@ numeri=
 cifre=
 
 [Stats]
-# Escludi l'ultima estrazione dai calcoli statistici? (=False, pre-analisi; =True, post-verifica)
+# Escludi l'ultima estrazione dai calcoli statistici? (No=False, pre-analisi; Si=True, post-verifica)
 previsionale=True
 
 [Persistence]
