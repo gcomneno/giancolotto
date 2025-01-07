@@ -17,7 +17,7 @@ backup_config="${config_file}.years.bak"
 cp "$config_file" "$backup_config"
 
 # Inizializza il file di configurazione prima dell'elaborazione
-sed -i "s/^previsionale=.*/previsionale=True/" "$config_file"
+#sed -i "s/^previsionale=.*/previsionale=True/" "$config_file"
 
 # Ciclo sugli anni da offset_da a offset_a
 for anno in $(seq $offset_da $offset_a); do
