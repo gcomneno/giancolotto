@@ -131,7 +131,7 @@ class LottoExtractor:
                 print(Style.RESET_ALL + f"\t<{numeri_rossi_count}>", end="\t")
 
                 # Stampa il numero cardinale dell'estrazione
-                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "[U]")
+                print(f"[{estrazione_count}]" if estrazione_count > 0 else "[U]")
 
     def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
         ruota_specifica = self.config['Scraping'].get('ruota')
@@ -185,7 +185,7 @@ class LottoExtractor:
                 print(f"{Style.RESET_ALL}\t#{rosso_count} <{consecutive_reds_count}>", end="\t")
 
                  # Stampa il numero cardinale dell'estrazione
-                print(f"[{estrazione_count}]" if estrazione_count >= 0 else "[U]")
+                print(f"[{estrazione_count}]" if estrazione_count > 0 else "[U]")
     
     def calcola_statistiche_cifre(self, numeri_per_ruota):
         cifre_presenti = Counter()
