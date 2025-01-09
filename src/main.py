@@ -31,14 +31,8 @@ if __name__ == "__main__":
     # 2) Gestione contatori e statistiche (solo per 'cifre')
     cifre_statistiche = Counter()
 
-    # 2.1) num_estr_from_config: indica quante estrazioni vogliamo analizzare (999 = tutte?)
     num_estr_from_config = 999
-
-    # 2.2) total_available: quante estrazioni sono effettivamente presenti nella lista self.extractions
-    total_available = len(lotto_extractor.extractions)
-
-    # 2.3) num_estr: prendiamo il minimo tra “desiderato” e “disponibile”,
-    #    così evitiamo di chiamare extraction(...) su indici che non esistono
+    total_available = num_estr
     num_estr = min(num_estr_from_config, total_available)
 
     # 3) Calcoliamo il “fine range” in base a previsionale

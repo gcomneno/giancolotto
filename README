@@ -3,36 +3,11 @@ Giancolotto è un\'applicazione Python per estrarre e analizzare dati delle estr
 
 ## Dipendenze
 - Python 3.x
-- Docker    [opzionale]
-- MongoDB   [opzionale]
 
 ## Installazione
 1. Clona il repository:
    git clone https://github.com/gcomneno/giancolotto.git
-   cd giancolotto
-
-2. Costruisci l\'immagine Docker        [opzionale]
-    make build
-
-3. Avvia i container:                   [opzionale]
-    make up
-
-4. Arresta e rimuove i container Docker [opzionale]
-    make down
-
-## Utilizzo con Docker
-### Verifica che i container siano in esecuzione:
-    docker-compose ps
-
-### Esegui l'applicazione nel container
-    make run
-    ...
-    docker-compose exec giancolotto python ./src/main.py
-    ...
-
-## Ambiente locale
-cd /I/DATA/MyWorkspace/Progetti/giancolotto
-winpty make run
+   cd giancolotto/scripts
 
 ## Configurazione
 Modifica il file config.ini per personalizzare la configurazione dell\'applicazione.
@@ -53,16 +28,35 @@ numeri=8,11
 cifre=0,9
 
 ## Risorse Aggiuntive
-E\' corredata da svariati script Python automatizzati dai relativi script di Shell che  utilizzano in maniera mirata le singole funzionalità in base allo specifico obiettivo:
+Giancolotto e' corredato da svariati script Python automatizzati dai relativi script di Shell che  utilizzano in maniera mirata le singole funzionalità in base allo specifico obiettivo:
+
 - frequenze.py
 - filotti.py
 - imc.py
 - repetita.py
 - strategy.py
 
+## TODO list
+Chi fosse interessato può segnalare BUG o inserire le proprie richieste di nuove funzionalità o miglioramente di quelle già esistenti, semplicemente aggiornando il file TODO.md
+
 ### Esempi di utilizzo dei vari script di Shell
-./go.sh
+./get.sh
     Esegue il programma in Python (main) in base alla configurazione data nel file config.ini
+
+./get.sh | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
+    Ti prende la colonna con il numero di cifre uscite (vale solo quando il filtro è impostato a 'cifre' ovviamente!) e te la
+    scrive come fosse un array, su una sola riga e separati dalla virgola. Utile per darla in pasto a pcond.py !
+
+./get_all.sh {anno_iniziale} {anno_finale}
+    Come get.sh ma visualizza tutte le ruote negli anni da/a specificati come parametro. Il valore predefinito è l'anno corrente.
+
+./get_all.sh 2023 | grep -E "<2>|<3>" | sort -k4,4r -k5,5r -k6,6r
+    Ricerca i numeri (o le cifre) impostati nel Filtering del config.ini per sorte di ambo o terno e nel biennio 2023/2024. 
+    Ordina il risultato per data decrescente (AA/MM/GG)
+
+./get_all.sh 2000 2024 | grep "<3>" | sort -k1,2
+    Ricerca i numeri (o le cifre) impostati nel Filtering del config.ini per sorte di terno, cercando tra i 25 anni dal 2000 al 2024.
+    Ordina il risultato per numero di estrazione crescente.
 
 ./cerca_su_tutte.sh "[U]" (oppure "[0]" se il valore di previsionale è false!)
     Visualizza l\'Ultima Estrazione per intero
@@ -91,22 +85,11 @@ E\' corredata da svariati script Python automatizzati dai relativi script di She
 ./cerca_su_tutte.sh "[4]" | awk '{print $6, $7, $8, $9, $10}' | tr ' ' ',' | tr ',' '\n' | sort -n | uniq | paste -sd ','
     Ricerca la fascia 4 su tutte le ruote e visualizza i numeri come un array univoco separato da virgola
 
-./anni.sh 2023 | grep -E "<2>|<3>" | sort -k4,4r -k5,5r -k6,6r
-    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di ambo o terno del biennio 2023/2024 ed ordina il risultato per data decrescente (AA/MM/GG)
-
-./anni.sh 2000 2024 | grep "<3>" | sort -k1,2
-    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di terno negli ultimi 25 anni ed ordina il risultato per numero di 
-    estrazione crescente
-
-./go.sh | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
-    Ti prende la colonna con il numero di cifre uscite (vale solo quando il filtro è impostato a 'cifre' ovviamente!) e te la
-    scrive come fosse un array, su una sola riga e separati dalla virgola. Utile per darla in pasto a pcond.py !
-
 ./cerca_su_tutte.sh "n. " | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
     Come sopra ma lo fa per l\'intero anno su tutte le ruote
 
 ./ultima_su_tutte.sh
-    Verifica le sorti che avrebbe ottenuto una specifica cinquina appena estratta nel passato (dall'ambo in su!)
+    Verifica le sorti che avrebbe ottenuto l'ultima cinquina appena estratta nelle estrazioni precedenti (esclusa la sorte di estratto semplice). La ricerca s'intende per singolo anno solare, per default viene considerato quello corrente.
 
 ./ultima_su_tutte.sh | tee -a risultati_ultima_su_tutte.log
     Come sopra ma inviando l'output ad un file di log
