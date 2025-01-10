@@ -48,13 +48,13 @@ if __name__ == "__main__":
             # Richiama extraction per ottenere i dati dell'estrazione
             refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr_id)
 
-            # Se la chiamata non restituisce dati validi, interrompiamo il loop, valuta se usare invece 'continue' in caso di salti estrattivi anomali!
+            # Se la chiamata non restituisce dati validi, ignoriamo e passiamo all'iterazione successiva
             if refs is None or nomi_ruote is None or numeri_per_ruota is None:
-                print(f"[DEBUG] Nessun dato valido per estrazione ID={estr_id}, interrompo il loop.")
-                break
+                #print(f"[DEBUG] Nessun dato valido per estrazione ID={estr_id}, ignoro.")
+                continue
 
             # Stampa l'header solo nella prima iterazione
-            printHeader = (estr_id == end_id)
+            printHeader = (estrazione_count == 0)
 
             # Stampa dei risultati in base al filtro
             if filtro == 'numeri':
@@ -75,9 +75,9 @@ if __name__ == "__main__":
                 )
 
                 # Aggiorna le statistiche per cifre
-#                if not previsionale or (previsionale and not printHeader):
-                presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
-                cifre_statistiche.update(dict(presenze_estr))
+                if not previsionale or (previsionale and not printHeader):
+                    presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
+                    cifre_statistiche.update(dict(presenze_estr))
 
             estrazione_count += 1
 
@@ -94,9 +94,9 @@ if __name__ == "__main__":
                 print(f"{cifra}\t\t{presenze}")
             print()
 
-            # Richiama extraction(1) per ottenere i dati dell'ultima estrazione (ignorata quando previsionale=True)
+            # Richiama extraction() per ottenere i dati dell'ultima estrazione (ignorata quando previsionale=True)
             if previsionale:
-                refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(1)
+                refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estrazione_count + 1)
                 pairings = lotto_extractor.generate_pairings(cifre_statistiche, numeri_per_ruota)
                 formatted_pairings = lotto_extractor.format_pairings(pairings)
 

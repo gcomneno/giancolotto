@@ -30,7 +30,7 @@ for anno in $(seq $offset_da $offset_a); do
         sed -i "s/^ruota=.*/ruota=${ruota}/" "$config_file"
 
         # Esegui il programma Python e filtra l'output in base al punteggio ottenuto
-        python.exe ../src/main.py | tail -n +4
+        python.exe ../src/main.py
     done
 done
 

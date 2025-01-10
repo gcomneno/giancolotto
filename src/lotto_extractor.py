@@ -114,7 +114,7 @@ class LottoExtractor:
 
         # Se non viene trovato alcun blocco corrispondente, restituisce valori di errore
         if not matching_block:
-            print(f"Estrazione con ID {target_id} non trovata.")
+            #print(f"Estrazione con ID {target_id} non trovata.")
             return None, None, None
 
         # Recupera tutti i numeri dal testo del blocco (per retrocompatibilità)
