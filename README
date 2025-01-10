@@ -91,9 +91,6 @@ Chi fosse interessato può segnalare BUG o inserire le proprie richieste di nuov
 ./ultima_su_tutte.sh
     Verifica le sorti che avrebbe ottenuto l'ultima cinquina appena estratta nelle estrazioni precedenti (esclusa la sorte di estratto semplice). La ricerca s'intende per singolo anno solare, per default viene considerato quello corrente.
 
-./ultima_su_tutte.sh | tee -a risultati_ultima_su_tutte.log
-    Come sopra ma inviando l'output ad un file di log
-
 ./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{print $1, $5}' | sort -k2,2nr -k1,1 | grep -v " 0"
     Verifica la tua strategia di gioco (in strategy.py) per tutti i valori di fascia nel database
 

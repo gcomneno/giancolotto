@@ -31,29 +31,30 @@ if __name__ == "__main__":
     # 2) Gestione contatori e statistiche (solo per 'cifre')
     cifre_statistiche = Counter()
 
-    num_estr_from_config = 999
-    total_available = num_estr
-    num_estr = min(num_estr_from_config, total_available)
+    # 3) Calcoliamo il “range” di estrazioni da prelevare, in base anche al valore di "previsionale"
+    start_id = offset_estr + 1           # Le estrazioni ufficiali iniziano da 1
+    end_id = offset_estr + num_estr      # Fine range ufficiale
 
-    # 3) Calcoliamo il “fine range” in base a previsionale
-    #    Se previsionale=True => ignora l'ultimissima estrazione => end -= 1
-    start = offset_estr + 1
-    end   = offset_estr + num_estr
+    # Se previsionale=True, saltiamo la più recente
+    if previsionale and num_estr > 0:
+        end_id -= 1
 
     # 4) Loop principale sulle estrazioni
     #    Se previsionale=True, l'ultima iterazione non verrà inclusa in range(...)
     estrazione_count = 0
     try:
-        for estr in range(start, end + 1):
+        # Loop inverso: da end_id a start_id (incluso), decrementando di 1
+        for estr_id in range(end_id, start_id - 1, -1):
             # Richiama extraction per ottenere i dati dell'estrazione
-            refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr)
+            refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estr_id)
 
-            # Se la chiamata non restituisce dati validi, saltiamo questa iterazione
+            # Se la chiamata non restituisce dati validi, interrompiamo il loop, valuta se usare invece 'continue' in caso di salti estrattivi anomali!
             if refs is None or nomi_ruote is None or numeri_per_ruota is None:
-                continue
+                print(f"[DEBUG] Nessun dato valido per estrazione ID={estr_id}, interrompo il loop.")
+                break
 
             # Stampa l'header solo nella prima iterazione
-            printHeader = (estr == 1)
+            printHeader = (estr_id == end_id)
 
             # Stampa dei risultati in base al filtro
             if filtro == 'numeri':
@@ -74,9 +75,9 @@ if __name__ == "__main__":
                 )
 
                 # Aggiorna le statistiche per cifre
-                if not previsionale or (previsionale and not printHeader):
-                    presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
-                    cifre_statistiche.update(dict(presenze_estr))
+#                if not previsionale or (previsionale and not printHeader):
+                presenze_estr = lotto_extractor.calcola_statistiche_cifre(numeri_per_ruota)
+                cifre_statistiche.update(dict(presenze_estr))
 
             estrazione_count += 1
 
@@ -104,4 +105,4 @@ if __name__ == "__main__":
                     print()
 
     except Exception as e:
-        print(f"Errore: {e}")
+        print(f"Errore nel loop principale: {e}")

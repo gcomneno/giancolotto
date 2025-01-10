@@ -75,23 +75,69 @@ class LottoExtractor:
 
         return extractions
 
-    def extraction(self, num=None):
-        extraction = self.extractions[num - 1] if num and 1 <= num <= len(self.extractions) else None
+    def extraction(self, target_id=None):
+        """
+        Recupera i dati dell'estrazione con l'ID ufficiale target_id.
+        
+        Parametri:
+        -----------
+        target_id : int
+            L'ID ufficiale dell'estrazione che si desidera recuperare.
+        
+        Ritorna:
+        --------
+        main_references : list of int
+            Lista dei primi 9 interi trovati nel testo del blocco (per retrocompatibilità).
+        nomi_ruote : list of str
+            Lista dei nomi delle ruote per questa estrazione.
+        numeri_per_ruota : dict
+            Dizionario associando ad ogni ruota i 5 numeri estratti.
+            Se l'ID non è valido o non si trova, restituisce (None, None, None).
+        """
 
-        if extraction:
-            ruote_elements = extraction.find_all('td', class_='nomeRuota-arch estratto-arch')
-            nomi_ruote = [ruota.text.strip() for ruota in ruote_elements]
-
-            numbers = re.findall(r'\d+', extraction.text)
-
-            main_references = [int(num) for num in numbers[:9]]
-            numbers = numbers[9:]
-            numeri_per_ruota = {ruota: [int(num) for num in numbers[i*5:(i+1)*5]] for i, ruota in enumerate(nomi_ruote)}
-
-            return main_references, nomi_ruote, numeri_per_ruota
-        else:
-            #print("Numero estrazione non valido.")
+        # Verifica che target_id sia fornito
+        if not target_id:
+            print("ID estrazione non valido.")
             return None, None, None
+
+        matching_block = None
+
+        # Cerca nel markup il blocco con il tag 'td.estr-n-arch' contenente l'ID desiderato
+        for block in self.extractions:
+            id_tag = block.find("td", class_="estr-n-arch")
+            if id_tag:
+                text_id = id_tag.get_text(strip=True)
+                match_id = re.search(r'\d+', text_id)  # Trova il primo numero nel testo
+                if match_id and int(match_id.group()) == target_id:
+                    matching_block = block
+                    break
+
+        # Se non viene trovato alcun blocco corrispondente, restituisce valori di errore
+        if not matching_block:
+            print(f"Estrazione con ID {target_id} non trovata.")
+            return None, None, None
+
+        # Recupera tutti i numeri dal testo del blocco (per retrocompatibilità)
+        all_numbers = re.findall(r'\d+', matching_block.text)
+
+        # I primi 9 numeri sono considerati riferimenti principali
+        main_references = [int(x) for x in all_numbers[:9]]
+
+        # I rimanenti corrispondono ai numeri estratti per le varie ruote
+        all_numbers = all_numbers[9:]
+
+        # Trova tutti gli elementi <td> che indicano i nomi delle ruote
+        ruote_elements = matching_block.find_all('td', class_='nomeRuota-arch estratto-arch')
+        nomi_ruote = [ruota.text.strip() for ruota in ruote_elements]
+
+        # Associa a ciascuna ruota i 5 numeri corrispondenti
+        numeri_per_ruota = {
+            ruota: [int(n) for n in all_numbers[i*5:(i+1)*5]]
+            for i, ruota in enumerate(nomi_ruote)
+        }
+
+        return main_references, nomi_ruote, numeri_per_ruota
+
 
     def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
         ruota_specifica = self.config['Scraping']['ruota']
