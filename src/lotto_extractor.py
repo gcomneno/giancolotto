@@ -1,3 +1,4 @@
+import os
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -7,9 +8,15 @@ from collections import Counter
 from colorama import init, Fore, Style
 
 class LottoExtractor:
-    def __init__(self, config_file='../config.ini'):
+    def __init__(self, config_file='config.ini'):
         # Initialize Colorama
         init()
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.abspath(os.path.join(script_dir, '..'))
+
+        # Percorso assoluto del file di configurazione
+        config_file = os.path.join(project_root, 'config.ini')
 
         self.config = self.read_config(config_file)
         self.url = self.config.get('Scraping', 'url')
