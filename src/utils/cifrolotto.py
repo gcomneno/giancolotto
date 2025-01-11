@@ -7,20 +7,6 @@ import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 dataset_path = os.path.join(script_dir, "../../dataset/cifrolotto.data")
 
-# Legenda delle categorie:
-# TSG => Formazioni Area TOP Semplici a Scendere Giù  
-# BSG => Formazioni Area BOTTOM Semplici a Scendere Giù  
-# TCG => Formazioni Area TOP Concatenate a Scendere Giù 
-# BCG => Formazioni Area BOTTOM Concatenate a Scendere Giù 
-# TSS => Formazioni Area TOP Semplici a Salire Sù 
-# BSS => Formazioni Area BOTTOM Semplici a Salire Sù 
-# TCS => Formazioni Area TOP Concatenate a Salire Sù
-# BCS => Formazioni Area BOTTOM Concatenate a Salire Sù 
-# GT  => Gemello sulla cifra TOP
-# GB  => Gemello sulla cifra BOTTOM
-# TD  => TOPDOWN!
-# T2  => TOPDOWN Numerico (2 cifre)
-
 def category_count(dataset, exclude_parentheses=False):
     """
     Conta le categorie presenti nel dataset con la possibilità di 

@@ -13,14 +13,14 @@ if __name__ == "__main__":
 
     # 1) Lettura dei parametri di configurazione
     try:
-        num_estr = int(lotto_extractor.config['Scraping'].get('num_estr', 1))
-    except ValueError:
-        num_estr = 1
-
-    try:
         offset_estr = int(lotto_extractor.config['Scraping'].get('offset_estr', 0))
     except ValueError:
         offset_estr = 0
+
+    try:
+        num_estr = int(lotto_extractor.config['Scraping'].get('num_estr', 1))
+    except ValueError:
+        num_estr = 1
 
     filtro = lotto_extractor.config.get('Filtering', 'filtro', fallback='numeri')
     if filtro not in ['numeri', 'cifre']:
@@ -32,12 +32,18 @@ if __name__ == "__main__":
     cifre_statistiche = Counter()
 
     # 3) Calcoliamo il “range” di estrazioni da prelevare, in base anche al valore di "previsionale"
+    if num_estr == 999:
+        # Ottieni l'ultima estrazione
+        refs, nomi_ruote, numeri_per_ruota = lotto_extractor.get_last_extraction()
+        
+        if refs is not None:
+            num_estr = refs[0]
+        else:
+            print("[DEBUG] Impossibile recuperare l'ultima estrazione.")
+            sys.exit(1)
+
     start_id = offset_estr + 1           # Le estrazioni ufficiali iniziano da 1
     end_id = offset_estr + num_estr      # Fine range ufficiale
-
-    # Se previsionale=True, saltiamo la più recente
-    if previsionale and num_estr > 0:
-        end_id -= 1
 
     # 4) Loop principale sulle estrazioni
     #    Se previsionale=True, l'ultima iterazione non verrà inclusa in range(...)
@@ -85,7 +91,7 @@ if __name__ == "__main__":
         print()
 
         # 6) Se stiamo analizzando cifre, stampa le statistiche finali
-        if filtro == 'cifre':
+        if filtro == 'cifre' and estrazione_count > 1:
             print("=====================")
             print(" C I F R O L O T T O ")
             print("=====================")
@@ -95,8 +101,8 @@ if __name__ == "__main__":
             print()
 
             # Richiama extraction() per ottenere i dati dell'ultima estrazione (ignorata quando previsionale=True)
-            if previsionale:
-                refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(estrazione_count + 1)
+            if previsionale and end_id > 1:
+                refs, nomi_ruote, numeri_per_ruota = lotto_extractor.extraction(end_id)
                 pairings = lotto_extractor.generate_pairings(cifre_statistiche, numeri_per_ruota)
                 formatted_pairings = lotto_extractor.format_pairings(pairings)
 

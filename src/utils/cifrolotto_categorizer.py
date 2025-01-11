@@ -1,6 +1,21 @@
 import os
 import subprocess
 
+# Legenda delle categorie:
+# TSG => Formazioni Area TOP Semplici a Scendere Giù  
+# BSG => Formazioni Area BOTTOM Semplici a Scendere Giù  
+# TCG => Formazioni Area TOP Concatenate a Scendere Giù 
+# BCG => Formazioni Area BOTTOM Concatenate a Scendere Giù 
+# TSS => Formazioni Area TOP Semplici a Salire Sù 
+# BSS => Formazioni Area BOTTOM Semplici a Salire Sù 
+# TCS => Formazioni Area TOP Concatenate a Salire Sù
+# BCS => Formazioni Area BOTTOM Concatenate a Salire Sù 
+# GT  => Gemello sulla cifra TOP
+# GB  => Gemello sulla cifra BOTTOM
+# TD  => TOPDOWN!
+# T2  => TOPDOWN Numerico (2 cifre)
+# MD  => MIDDLEFIELD Numerico (Posizione 5 e 6)
+
 # Funzione per eseguire ./get_all.sh e catturare l'output
 def run_get_all_script():
     """
