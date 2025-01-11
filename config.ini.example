@@ -1,7 +1,7 @@
 [Scraping]
-url=https://www.estrazionedellotto.it/risultati/archivio-lotto-2024
+url=https://www.estrazionedellotto.it/risultati/archivio-lotto-2025
 
-# Numero di estrazioni iniziali da saltare, a partire dall'ultima (=0, analisi/verifica)
+# Numero di estrazioni iniziali da saltare, a partire dalla prima (=0, tutte)
 offset_estr=0
 
 # Numero di estrazioni da recuperare a partire dall'offset (almeno 1 per: analisi; almeno 2 per: verifica; =999, per tutte)

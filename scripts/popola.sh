@@ -1,28 +1,25 @@
 #!/bin/bash
 
-# Controlla se sono stati forniti al massimo 3 argomenti
-if [ "$#" -gt 3 ]; then
-    echo "Utilizzo: $0 <offset_finale> <num_estr> [reset]"
-    exit 1
-fi
-
 echo "Inizio esecuzione: $(date)"
 
-# Ricevi l'offset e num_estr dal comando o imposta valori predefiniti
-offset_estr=${1:-0}
-num_estr=${2:-999}
+num_estr=${1:-999}
 
-# Se l'utente passa "reset" come 3° argomento
-if [ "$#" -eq 3 ] && [[ "$3" == "reset" ]]; then
-    : > ../dataset/database.2025.md
-    echo "Il dataset è stato resettato."
-fi
+: > ../dataset/database.2025.md
+echo "Il dataset è stato resettato."
 
-# Loop sugli offset
-for ((i=offset_estr; i>=0; i--)); do
+for ((i=2; i<=999; i++)); do
     # Richiama lo script che produce l'output tabellare
-    output=$(./ultima_su_tutte.sh "$i" "$num_estr")
+    output=$(./ultima_su_tutte.sh "$i")
 
+    # Estrai la riga contenente "Estrazione"
+    estrazione_line=$(echo "$output" | grep "Estrazione:")
+
+    # Estrai il numero dell'estrazione, rimuovendo eventuali zeri iniziali
+    numero_estrazione=$(echo "$estrazione_line" | awk '{print $2}' | sed 's/^0*//')
+
+    if [[ "$i" > "$numero_estrazione" ]]; then
+        break
+    fi
     # Estrai RUOTA e DIST, saltando righe non pertinenti e scartando le distanze "N/A"
     lines=$(echo "$output" | \
       awk -F'|' '
@@ -45,10 +42,9 @@ for ((i=offset_estr; i>=0; i--)); do
     if [[ -n "$lines" ]]; then
         # Aggiungi l’output al dataset
         echo "$lines" >> ../dataset/database.2025.md
-        echo "Righe (ruota,distanza) aggiunte al dataset (estrazione offset $i):"
-        echo "$lines"
+        echo "Riga $lines aggiunta al dataset per l'estrazione $i"
     else
-        echo "Nessun risultato valido (distanza != N/A) per l'offset $i."
+        echo "Nessun risultato valido (distanza != N/A) per l'estrazione $i"
     fi
 done
 

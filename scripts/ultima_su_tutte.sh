@@ -2,9 +2,8 @@
 
 echo "Inizio script: $(date)"
 
-# Ricevi l'offset dal comando o imposta un valore predefinito
-offset=${1:-0}
-num_estr=${2:-999}
+offset_estr=0
+num_estr=${1:-999}
 
 # Elenco delle ruote del Lotto (escludendo "Nazionale")
 ruote=("Bari" "Cagliari" "Firenze" "Genova" "Milano" "Napoli" "Palermo" "Roma" "Torino" "Venezia")
@@ -25,16 +24,15 @@ backup_config="${config_file}.bak"
 cp "$config_file" "$backup_config"
 
 # Inizializza il file di configurazione prima dell'elaborazione
-sed -i "s/^previsionale=.*/previsionale=True/" "$config_file"
+sed -i "s/^offset_estr=.*/offset_estr="$offset_estr"/" "$config_file"
+sed -i "s/^num_estr=.*/num_estr="$num_estr"/" "$config_file"
+sed -i "s/^previsionale=.*/previsionale=False/" "$config_file"
 sed -i "s/^filtro=.*/filtro=numeri/" "$config_file"
 sed -i "s/^numeri=.*/numeri=/" "$config_file"
 sed -i "s/^cifre=.*/cifre=/" "$config_file"
-sed -i "s/^offset_estr=.*/offset_estr=$offset/" "$config_file"
-sed -i "s/^num_estr=.*/num_estr=$num_estr/" "$config_file"
 
 ### 1) Prima Fase: Acquisizione dei 5 numeri sortiti per ciascuna ruota
 ###     Per ogni ruota, manipola il config.ini ed invoca main.py per catturare i 5 numeri estratti (corrispondenti a [U] = ultima estrazione)
-###     Nota che questo fatto è assicurato dal previsionale=True, altrimenti con previsionale=False l'ultima estrazione si dovrebbe individuare con [0]
 ###     Popola l’array associativo numeri_per_ruota.
 for ruota in "${ruote[@]}"; do
     # Modifica il file di configurazione per aggiornare la ruota
@@ -46,6 +44,7 @@ for ruota in "${ruote[@]}"; do
     # Associa i numeri estratti alla ruota corrente nell'array associativo
     numeri_per_ruota["$ruota"]="$numeri"
 done
+estrazione=$(python.exe ../src/main.py | grep -v 'RUOTA' | awk '/[U]/ { print $2 " del " $4 }')
 
 ### 2) Seconda Fase: Calcolo della "distanza" e/o verifica di eventuali combinazioni vincenti
 ###     Per ogni ruota, scrive i numeri estratti di volta in volta in config.ini, e invoca di nuovo main.py ma filtrando <2>, <3>, <4>, <5>.
@@ -87,8 +86,9 @@ mv "$backup_config" "$config_file"
 
 ### 3) Riepilogo Finale
 ###     Stampa una tabella con: Ruota, Numeri Estratti, Distanza e Combinazione
+echo "Estrazione: $estrazione"
 echo "--------------------------------------------------------------------"
-printf "%-10s | %-14s | %-7s | %-20s\n" "RUOTA" "NUMERI" "DIST" "VINCITA"
+printf "%-10s | %-14s | %-15s | %-30s\n" "RUOTA" "NUMERI" "DIST" "VINCITA"
 echo "--------------------------------------------------------------------"
 for ruota in "${ruote[@]}"; do
     numeri="${numeri_per_ruota[$ruota]}"
@@ -96,7 +96,7 @@ for ruota in "${ruote[@]}"; do
     win="${vincita_per_ruota[$ruota]}"
 
     # Esempio di output tabellare
-    printf "%-10s | %-10s | %-7s | %-20s\n" "$ruota" "$numeri" "$dist" "$win"
+    printf "%-10s | %-14s | %-15s | %-30s\n" "$ruota" "$numeri" "$dist" "$win"
 done
 echo "--------------------------------------------------------------------"
 echo "Fine script: $(date)"
