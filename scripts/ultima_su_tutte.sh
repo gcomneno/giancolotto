@@ -84,19 +84,20 @@ done
 # Ripristina il file di configurazione originale
 mv "$backup_config" "$config_file"
 
-### 3) Riepilogo Finale
-###     Stampa una tabella con: Ruota, Numeri Estratti, Distanza e Combinazione
 echo "Estrazione: $estrazione"
-echo "--------------------------------------------------------------------"
-printf "%-10s | %-14s | %-15s | %-30s\n" "RUOTA" "NUMERI" "DIST" "VINCITA"
-echo "--------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------"
+printf "%-10s | %-14s | %-30s | %-20s\n" "RUOTA" "NUMERI" "DIST" "VINCITA"
+echo "---------------------------------------------------------------------------"
 for ruota in "${ruote[@]}"; do
     numeri="${numeri_per_ruota[$ruota]}"
     dist="${distanza_per_ruota[$ruota]}"
     win="${vincita_per_ruota[$ruota]}"
 
+    # Se "DIST" contiene più righe, uniscile in una singola riga separata da virgole
+    dist=$(echo "$dist" | tr '\n' ',' | sed 's/,$//') # Trasforma nuove righe in virgole e rimuove l'ultima virgola
+
     # Esempio di output tabellare
-    printf "%-10s | %-14s | %-15s | %-30s\n" "$ruota" "$numeri" "$dist" "$win"
+    printf "%-10s | %-14s | %-30s | %-20s\n" "$ruota" "$numeri" "$dist" "$win"
 done
-echo "--------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------"
 echo "Fine script: $(date)"
