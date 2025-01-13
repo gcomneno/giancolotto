@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# Script per l'aggiornamento del database in base all'analisi di più estrazioni
-echo "Inizio esecuzione: $(date)"
-python.exe .\\src\\main.py
-echo "Fine esecuzione: $(date)"
+# Determina la directory dello script
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Directory root del progetto (una directory sopra la directory dello script)
+project_root="$(realpath "${script_dir}/..")"
+
+# Percorso assoluto dello script principale
+main_script="${project_root}/src/main.py"
+
+# main.py
+python.exe "$main_script"

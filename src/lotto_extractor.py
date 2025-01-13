@@ -1,81 +1,179 @@
 import os
 import requests
-from bs4 import BeautifulSoup
 import re
 import configparser
 import pymongo
-from collections import Counter
+
+from bs4 import BeautifulSoup
 from colorama import init, Fore, Style
+from collections import Counter
 
 class LottoExtractor:
     def __init__(self, config_file='config.ini'):
-        # Initialize Colorama
+        """
+        Inizializza l'istanza della classe LottoExtractor, caricando il file di configurazione,
+        i numeri e cifre evidenziate, e i dati delle estrazioni.
+
+        Parametri:
+        -----------
+        config_file : str
+            Percorso del file di configurazione (default: 'config.ini').
+        """
+
+        # Inizializza Colorama per la gestione dei colori nella stampa
         init()
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(script_dir, '..'))
+        # Determina i percorsi rilevanti
+        self.project_root = self.get_project_root()
+        self.config_path = os.path.join(self.project_root, config_file)
 
-        # Percorso assoluto del file di configurazione
-        config_file = os.path.join(project_root, 'config.ini')
+        # Legge il file di configurazione
+        self.config = self.read_config(self.config_path)
 
-        self.config = self.read_config(config_file)
+        # Imposta l'URL di scraping
         self.url = self.config.get('Scraping', 'url')
-        
-        self.numeri_evidenziati = self.get_numeri_evidenziati()
-        self.cifre_evidenziate = self.get_cifre_evidenziate()
 
+        # Carica i numeri e le cifre evidenziate
+        self.numeri_evidenziati = self.get_highlighted_numbers()
+        self.cifre_evidenziate = self.get_highlighted_digits()
+
+        # Recupera e analizza i dati di scraping
         self.response = self.fetch_data()
         self.extractions = self.parse_data()
 
-    def read_config(self, config_file):
+    def get_project_root(self):
+        """
+        Determina la root del progetto in base al percorso dello script corrente.
+
+        Ritorna:
+        --------
+        str : Percorso assoluto della root del progetto.
+        """
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.abspath(os.path.join(script_dir, '..'))
+
+    def read_config(self, config_file_path):
+        """
+        Reads the configuration file.
+
+        Parameters:
+        -----------
+        config_file_path : str
+            Path to the configuration file.
+
+        Returns:
+        --------
+        configparser.ConfigParser : The configuration object.
+        """
         config = configparser.ConfigParser()
-        config.read(config_file)
+        config.read(config_file_path)
         return config
 
-    def ottieni_opzioni_configurazione(self):
+    def get_persistence_options(self):
+        """
+        Retrieves persistence configuration options from the configuration file.
+
+        Returns:
+        --------
+        tuple : A tuple containing the host, port, and database name.
+        """
         host = self.config.get('Persistence', 'host')
-        porta = self.config.getint('Persistence', 'porta')
-        database_nome = self.config.get('Persistence', 'database')
-        return host, porta, database_nome
+        port = self.config.getint('Persistence', 'porta')
+        database_name = self.config.get('Persistence', 'database')
+        return host, port, database_name
 
-    def ottieni_connessione_mongodb(self):
-        host, porta, nome_database = self.ottieni_opzioni_configurazione()        
-        client = pymongo.MongoClient(host, porta)
-        return client, client[nome_database]
+    def get_mongodb_connection(self):
+        """
+        Establishes a MongoDB connection based on the configuration file.
 
-    def ottieni_ruota_specifica(self):
-        ruota_specifica = self.config['Scraping']['ruota']
-        return ruota_specifica if ruota_specifica else 'Tutte'
+        Returns:
+        --------
+        tuple : A tuple containing the MongoDB client and the selected database.
+        """
+        host, port, database_name = self.get_persistence_options()
+        client = pymongo.MongoClient(host, port)
+        return client, client[database_name]
 
-    def get_numeri_evidenziati(self):
+    def get_specific_wheel(self):
+        """
+        Retrieves the specific wheel name from the configuration file.
+
+        Returns:
+        --------
+        str : The name of the specific wheel or 'All' if none is specified.
+        """
+        specific_wheel = self.config['Scraping']['ruota']
+        return specific_wheel if specific_wheel else 'All'
+
+    def get_highlighted_numbers(self):
+        """
+        Retrieves the highlighted numbers from the configuration file.
+
+        Returns:
+        --------
+        set : A set of highlighted numbers.
+        """
         try:
-            numeri_str = self.config['Filtering']['numeri']
-            numeri = [int(numero) for numero in numeri_str.split(',')]
-            return set(numeri)
+            numbers_str = self.config['Filtering']['numeri']
+            numbers = {int(number) for number in numbers_str.split(',')}
+            return numbers
         except (configparser.NoSectionError, configparser.NoOptionError, ValueError):
             return set()
 
-    def get_cifre_evidenziate(self):
+    def get_highlighted_digits(self):
+        """
+        Retrieves the highlighted digits from the configuration file.
+
+        Returns:
+        --------
+        set : A set of highlighted digits.
+        """
         try:
-            cifre_str = self.config['Filtering']['cifre']
-            cifre = [int(cifra) for cifra in cifre_str.split(',')]
-            return set(cifre)
+            digits_str = self.config['Filtering']['cifre']
+            digits = {int(digit) for digit in digits_str.split(',')}
+            return digits
         except (configparser.NoSectionError, configparser.NoOptionError, ValueError):
             return set()
-        
+
     def fetch_data(self):
-        response = requests.get(self.url)
-        if response.status_code == 200:
+        """
+        Fetches the HTML content from the configured URL.
+
+        Returns:
+        --------
+        requests.Response : The HTTP response object containing the HTML content.
+
+        Raises:
+        -------
+        Exception : If the page cannot be retrieved successfully.
+        """
+        try:
+            response = requests.get(self.url)
+            response.raise_for_status()  # Raises HTTPError for bad responses (4xx and 5xx)
             return response
-        else:
-            raise Exception(f"Impossibile recuperare la pagina. Codice di stato: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Impossibile recuperare la pagina. Errore: {e}")
 
     def parse_data(self):
+        """
+        Parses the HTML content and extracts the relevant table(s) containing lottery data.
+
+        Returns:
+        --------
+        list : A list of BeautifulSoup objects representing the extracted tables.
+
+        Raises:
+        -------
+        ValueError : If no valid extraction tables are found.
+        """
         soup = BeautifulSoup(self.response.text, 'html.parser')
+
+        # Retrieve all tables matching the class name
         extractions = soup.find_all('table', class_='tabellaEstrazioni-arch')
-        # NOTA:
-        # per l'url di scraping 'https://www.estrazionedellotto.it/ultime-estrazioni-lotto' invece,
-        # in lotto_extractor.py alla linea 68 il primo parametro alla find_all deve essere 'article'
+
+        # Fall-back logic for alternative URL structure
+        if not extractions and 'ultime-estrazioni-lotto' in self.url:
+            extractions = soup.find_all('article')
 
         if not extractions:
             raise ValueError("Nessuna estrazione trovata!")
@@ -196,147 +294,181 @@ class LottoExtractor:
 
         return main_references, nomi_ruote, numeri_per_ruota
 
-    def print_results_numeri(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
-        ruota_specifica = self.config['Scraping']['ruota']
-        if not ruota_specifica or printHeader:
-            print("\nEstrazione\t\tRUOTA\t\t" + "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)]))
-            print("=" * 80)
+    def _print_header(self, num_columns, is_cifre):
+        """
+        Stampa l'intestazione della tabella dei risultati.
 
-        for ruota, numeri in numeri_per_ruota.items():
+        Parametri:
+        -----------
+        num_columns : int
+            Numero di colonne per i numeri/cifre per ruota.
+        is_cifre : bool
+            Indica se il risultato riguarda le cifre (True) o i numeri (False).
+        """
 
-            if not ruota_specifica or ruota == ruota_specifica:
-                print(f"n. {int(refs[0]):03d} del {int(refs[3]):04d}/{int(refs[2]):02d}/{int(refs[1]):02d}", end="\t")
-                print(f"{ruota.ljust(9)}", end="\t")
+        print("=" * 80)
+        headers = "\t".join([f"{i}o" for i in range(1, num_columns + 1)])
+        print(f"Estrazione\t\tRUOTA\t\t{headers}")
+        print("=" * 80)
 
-                # Inizializza il contatore per i numeri evidenziati in rosso
-                numeri_rossi_count = 0
-            
+    def print_results_numbers(self, refs, ruote, numeri_ruote, show_header, extraction_index):
+        """
+        Stampa i risultati per i numeri estratti.
+
+        Parametri:
+        -----------
+        refs : list
+            Informazioni sull'estrazione (ID, data, ecc.).
+        ruote : list
+            Nomi delle ruote.
+        numeri_ruote : dict
+            Numeri estratti per ogni ruota.
+        show_header : bool
+            Indica se stampare l'intestazione.
+        extraction_index : int
+            Indice cardinale dell'estrazione (0 = ultima estrazione).
+        """
+        specific_wheel = self.config['Scraping'].get('ruota', '')
+
+        if show_header:
+            self._print_header(len(numeri_ruote[ruote[0]]), is_cifre=False)
+
+        for ruota, numeri in numeri_ruote.items():
+            if not specific_wheel or ruota == specific_wheel:
+                print(f"n. {refs[0]:03d} del {refs[3]:04d}/{refs[2]:02d}/{refs[1]:02d}\t{ruota.ljust(9)}\t", end="")
+                red_count = 0
+
                 for numero in numeri:
-                    # Verifica se il numero è tra quelli da evidenziare
                     if numero in self.numeri_evidenziati:
-                        try:
-                            # Evidenzia il numero con un colore rosso
-                            print(Fore.RED + f"{numero:02d}", end="\t")          
-                        except OSError as e:
-                            print(f"{numero:02d}", end="\t")
-                            pass
-              
-                        # Incrementa il contatore dei numeri evidenziati in rosso
-                        numeri_rossi_count += 1  
+                        print(Fore.RED + f"{numero:02d}", end="\t")
+                        red_count += 1
                     else:
-                        try:
-                            print(Fore.WHITE + f"{numero:02d}", end="\t")                       
-                        except OSError as e:
-                            print(f"{numero:02d}", end="\t")
-                            pass
+                        print(Fore.WHITE + f"{numero:02d}", end="\t")
 
-                # Stampa il conteggio dei numeri evidenziati in rosso per questa riga
-                print(Style.RESET_ALL + f"\t<{numeri_rossi_count}>", end="\t")
+                print(Style.RESET_ALL + f"\t<{red_count}>\t[{extraction_index if extraction_index > 0 else 'U'}]")
 
-                # Stampa il numero cardinale dell'estrazione
-                print(f"[{estrazione_count}]" if estrazione_count > 0 else "[U]")
+    def print_results_digits(self, refs, ruote, numeri_ruote, show_header, extraction_index):
+        """
+        Stampa i risultati per le cifre dei numeri estratti.
 
-    def print_results_cifre(self, refs, nomi_ruote, numeri_per_ruota, printHeader, estrazione_count):
-        ruota_specifica = self.config['Scraping'].get('ruota')
-        
-        if not ruota_specifica or printHeader:
-            headers = "\t".join([f"{i}o" for i in range(1, len(numeri_per_ruota[nomi_ruote[0]]) + 1)])
-            print(f"\nEstrazione\t\tRUOTA\t\t{headers}")
-            print("=" * 80)
-        
-        consecutive_reds_count = 0
-        
-        for ruota, numeri in numeri_per_ruota.items():
-            if not ruota_specifica or ruota == ruota_specifica:
-                rosso_count = 0
-                print(f"n. {int(refs[0]):03d} del {int(refs[3]):04d}/{int(refs[2]):02d}/{int(refs[1]):02d}\t{ruota.ljust(9)}\t", end="")
-                
+        Parametri:
+        -----------
+        refs : list
+            Informazioni sull'estrazione (ID, data, ecc.).
+        ruote : list
+            Nomi delle ruote.
+        numeri_ruote : dict
+            Numeri estratti per ogni ruota.
+        show_header : bool
+            Indica se stampare l'intestazione.
+        extraction_index : int
+            Indice cardinale dell'estrazione (0 = ultima estrazione).
+        """
+        specific_wheel = self.config['Scraping'].get('ruota', '')
+
+        if show_header:
+            self._print_header(len(numeri_ruote[ruote[0]]), is_cifre=True)
+
+        for ruota, numeri in numeri_ruote.items():
+            if not specific_wheel or ruota == specific_wheel:
+                print(f"n. {refs[0]:03d} del {refs[3]:04d}/{refs[2]:02d}/{refs[1]:02d}\t{ruota.ljust(9)}\t", end="")
+                red_count = 0
+                consecutive_reds = 0
+
                 for numero in numeri:
-                    # Crea una lista di cifre per il numero, aggiungendo uno zero iniziale se necessario.
-                    cifre = [0, numero] if numero < 10 else [int(cifra) for cifra in str(numero)]
-                    
-                    previous_was_red = False  # Reset for each new number
-                    for i, cifra in enumerate(cifre, start=1):
-                        # Evidenzia la cifra se è nella lista delle cifre evidenziate.
-                        if cifra in self.cifre_evidenziate:
-                            try:
-                                print(Fore.RED + str(cifra), end="")
-                            except OSError as e:
-                                print(str(cifra), end="")
-                                pass
-                            rosso_count += 1
-                            if previous_was_red:
-                                consecutive_reds_count += 1
-                            previous_was_red = True
+                    digits = [0, numero] if numero < 10 else [int(c) for c in str(numero)]
+                    was_previous_red = False
+
+                    for digit in digits:
+                        if digit in self.cifre_evidenziate:
+                            print(Fore.RED + str(digit), end="")
+                            red_count += 1
+                            if was_previous_red:
+                                consecutive_reds += 1
+                            was_previous_red = True
                         else:
-                            try:
-                                print(Fore.WHITE + str(cifra), end="")
-                            except OSError as e:
-                                print(str(cifra), end="")
-                                pass
-                            previous_was_red = False
-                        
-                        if i % 2 == 0:
-                            print("\t", end="")
-                    
-                    if len(cifre) % 10 == 0:
-                        print()
-                    else:
-                        print(" ", end="")
+                            print(Fore.WHITE + str(digit), end="")
+                            was_previous_red = False
+
+                    print("\t", end="")
                 
-                # Stampa il conteggio delle cifre rosse e assicurati di andare a capo
-                print(f"{Style.RESET_ALL}\t#{rosso_count} <{consecutive_reds_count}>", end="\t")
+                print(Style.RESET_ALL + f"\t#{red_count} <{consecutive_reds}>\t[{extraction_index if extraction_index > 0 else 'U'}]")
 
-                 # Stampa il numero cardinale dell'estrazione
-                print(f"[{estrazione_count}]" if estrazione_count > 0 else "[U]")
-    
-    def calcola_statistiche_cifre(self, numeri_per_ruota):
-        cifre_presenti = Counter()
-        ruota_specifica = self.config['Scraping']['ruota']
-        for ruota, numeri in numeri_per_ruota.items():
-            if not ruota_specifica or ruota == ruota_specifica:
-                for numero in numeri:
-                    cifre_presenti.update(str(numero).zfill(2))
+    def calculate_digit_statistics(self, numbers_per_wheel):
+        """
+        Calcola le statistiche delle cifre presenti nei numeri estratti.
 
-        # Aggiungi le cifre mancanti con presenza 0
-        cifre_totali = set(str(i) for i in range(10))
-        cifre_presenti.update(dict.fromkeys(cifre_totali - set(cifre_presenti.keys()), 0))
+        Parametri:
+        -----------
+        numbers_per_wheel : dict
+            Dizionario che associa a ciascuna ruota i numeri estratti.
 
-        # Restituisci la lista di tuple ordinate per presenza discendente
-        statistiche_ordinate = sorted(cifre_presenti.items(), key=lambda x: x[0], reverse=False)
+        Ritorna:
+        --------
+        list of tuple
+            Lista di tuple ordinate per cifra, contenente ciascuna cifra e il numero di presenze.
+        """
+        digit_counts = Counter()
+        specific_wheel = self.config['Scraping'].get('ruota', '')
+
+        # Conta le cifre per la ruota specifica o tutte
+        for wheel, numbers in numbers_per_wheel.items():
+            if not specific_wheel or wheel == specific_wheel:
+                for number in numbers:
+                    # Aggiorna il conteggio delle cifre (aggiungi zeri iniziali se necessario)
+                    digit_counts.update(str(number).zfill(2))
+
+        # Assicurati che tutte le cifre da 0 a 9 siano presenti (anche con conteggio 0)
+        all_digits = {str(i) for i in range(10)}
+        digit_counts.update({digit: 0 for digit in all_digits - digit_counts.keys()})
+
+        # Ordina le statistiche per cifra
+        sorted_statistics = sorted(digit_counts.items(), key=lambda x: x[0])
         
-        return statistiche_ordinate
+        return sorted_statistics
 
-    def generate_pairings(self, cifre_statistiche, estrazione):
+    def generate_pairings(self, digit_statistics, extraction):
+        """
+        Genera le associazioni basate sulle cifre dei numeri estratti.
+
+        Parametri:
+        -----------
+        digit_statistics : dict
+            Dizionario che mappa ogni cifra con il numero di presenze.
+        extraction : dict
+            Dizionario che associa a ogni ruota i numeri estratti.
+
+        Ritorna:
+        --------
+        list of dict
+            Lista di associazioni con la ruota specifica come chiave e coppie di valori come lista.
+        """
         pairings = []
+        specific_wheel = self.get_specific_wheel()
 
-        # Individua la ruota specifica se presente
-        ruota_specifica = self.ottieni_ruota_specifica()
+        # Estrai i numeri della ruota selezionata (o tutte)
+        wheel_numbers = extraction.get(specific_wheel, [])
 
-        # Estrai i 5 numeri della ruota selezionata (o tutte)
-        numeri_ruota = estrazione.get(ruota_specifica, [])
+        # Aggiungi zeri iniziali ai numeri minori di 10
+        formatted_numbers = [str(number).zfill(2) for number in wheel_numbers]
 
-        # Aggiunge lo zero iniziale ai numeri minori di 10
-        numeri_formattati = [str(numero).zfill(2) for numero in numeri_ruota]
+        # Genera associazioni per ciascun numero
+        for number in formatted_numbers:
+            number_str = str(number)
+            pairings_for_number = []
 
-        # Genera le associazioni per ogni numero dell'ultima estrazione
-        for num in numeri_formattati:
-            # Converti il numero in una stringa per poter scorrere la sua sequenza di cifre
-            num_str = str(num)
-            pairings_for_num = []
+            for digit in number_str:
+                pairings_for_number.append(str(digit_statistics.get(digit, 0)))
 
-            for cifra in num_str:
-                pairings_for_num.append(str(cifre_statistiche.get(cifra, 0)))
-
-                # Aggiungi la coppia alla lista se ne hai accumulate due
-                if len(pairings_for_num) == 2:
+                # Quando si accumulano due cifre, crea una coppia
+                if len(pairings_for_number) == 2:
                     try:
-                        pairings.append({ruota_specifica: pairings_for_num.copy()})
+                        pairings.append({specific_wheel: pairings_for_number.copy()})
                     except Exception as e:
                         print(f"Errore nell'aggiunta di associazioni: {e}")
 
                     # Resetta la lista dopo ogni coppia
-                    pairings_for_num = []
+                    pairings_for_number = []
 
         return pairings
 
@@ -345,13 +477,20 @@ class LottoExtractor:
         Formatta le associazioni in un dizionario con il nome della ruota come chiave
         e una lista di coppie come valore.
 
-        :param pairings: Lista di associazioni
-        :return: Dizionario formattato {'ruota': ['xx', 'xx', ...]}
-        """
-        formatted_dict = {}
-        for association in pairings:
-            ruota_name = list(association.keys())[0]
-            pairs_list = association[ruota_name]
-            formatted_dict.setdefault(ruota_name, []).extend(pairs_list)
+        Parametri:
+        -----------
+        pairings : list of dict
+            Lista di associazioni con ruote come chiavi e coppie come valori.
 
-        return formatted_dict
+        Ritorna:
+        --------
+        dict
+            Dizionario formattato come {'ruota': ['xx', 'xx', ...]}.
+        """
+        formatted_pairings = {}
+        for association in pairings:
+            wheel_name = list(association.keys())[0]
+            pair_list = association[wheel_name]
+            formatted_pairings.setdefault(wheel_name, []).extend(pair_list)
+
+        return formatted_pairings

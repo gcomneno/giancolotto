@@ -2,6 +2,18 @@
 
 echo "Inizio script: $(date)"
 
+# Determina la directory dello script
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Directory root del progetto (una directory sopra la directory dello script)
+project_root="$(realpath "${script_dir}/..")"
+
+# Percorso assoluto del file di configurazione
+config_file="${project_root}/config.ini"
+
+# Percorso assoluto dello script principale
+main_script="${project_root}/src/main.py"
+
 offset_estr=0
 num_estr=${1:-999}
 
@@ -16,11 +28,8 @@ declare -A numeri_per_ruota
 declare -A distanza_per_ruota
 declare -A vincita_per_ruota
 
-# Percorso del file di configurazione principale
-config_file="../config.ini"
-
 # Creazione di un backup del file di configurazione originale
-backup_config="${config_file}.bak"
+backup_config="${config_file}.last.bak"
 cp "$config_file" "$backup_config"
 
 # Inizializza il file di configurazione prima dell'elaborazione
@@ -39,12 +48,12 @@ for ruota in "${ruote[@]}"; do
     sed -i "s/^ruota=.*/ruota=${ruota}/" "$config_file"
 
     # Esegui il programma Python e filtra l'output per ottenere i 5 numeri
-    numeri=$(python.exe ../src/main.py | grep -v 'RUOTA' | awk '/[U]/ { print $6 "," $7 "," $8 "," $9 "," $10 }')
+    numeri=$(python.exe "$main_script" | grep -v 'RUOTA' | awk '/[U]/ { print $6 "," $7 "," $8 "," $9 "," $10 }')
 
     # Associa i numeri estratti alla ruota corrente nell'array associativo
     numeri_per_ruota["$ruota"]="$numeri"
 done
-estrazione=$(python.exe ../src/main.py | grep -v 'RUOTA' | awk '/[U]/ { print $2 " del " $4 }')
+estrazione=$(python.exe "$main_script" | grep -v 'RUOTA' | awk '/[U]/ { print $2 " del " $4 }')
 
 ### 2) Seconda Fase: Calcolo della "distanza" e/o verifica di eventuali combinazioni vincenti
 ###     Per ogni ruota, scrive i numeri estratti di volta in volta in config.ini, e invoca di nuovo main.py ma filtrando <2>, <3>, <4>, <5>.
@@ -55,7 +64,7 @@ for ruota in "${ruote[@]}"; do
     sed -i "s/^numeri=.*/numeri=${numeri_per_ruota[$ruota]}/" "$config_file"
 
     # Esegui il programma Python e filtra l'output in base alle combinazioni ottenute (dall'ambo in su!)
-    output=$(python.exe ../src/main.py | grep -E "<2>|<3>|<4>|<5>" | grep -v "\[U\]")
+    output=$(python.exe "$main_script" | grep -E "<2>|<3>|<4>|<5>" | grep -v "\[U\]")
 
     #Calcolo "distance" se l'output mostra un [0], [1], ecc.
     dist=$(echo "$output" | grep -o '\[[0-9]*\]' | tr -d '[]')  # estrae 0, 1, 2...

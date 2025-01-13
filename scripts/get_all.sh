@@ -37,5 +37,3 @@ for anno in $(seq $offset_da $offset_a); do
 done
 
 mv "$backup_config" "$config_file"
-
-echo "Fine esecuzione: $(date)"

@@ -1,29 +1,39 @@
 #!/bin/bash
 
-# Controlla se è stato passato un argomento
-if [ $# -eq 0 ]; then
-    echo "Devi fornire una stringa da cercare."
-    exit 1
-fi
+# Calcola la directory dello script
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# La stringa da cercare è il primo argomento
-string_to_grep="$1"
+# Calcola la root del progetto come una directory sopra quella dello script
+project_root="$(realpath "${script_dir}/..")"
 
-# La stringa che contiene caratteri speciali (come parentesi quadre) ?
-string_to_grep=$(echo "$1" | sed 's/[][\.*^$(){}?+]/\\&/g')
+# Percorsi assoluti per i file richiesti
+config_file="${project_root}/config.ini"
+main_script="${project_root}/src/main.py"
 
-# Percorso del file di configurazione principale
-config_file="../config.ini"
+# La stringa da cercare è il primo argomento, usa "[U]" se non viene fornito nulla
+string_to_grep="${1:-[U]}"
+
+# Esegui l'escape dei caratteri speciali
+string_to_grep=$(echo "$string_to_grep" | sed 's/[][\.*^$(){}?+]/\\&/g')
 
 # Creazione di un backup del file di configurazione originale
 backup_config="${config_file}.all.bak"
 cp "$config_file" "$backup_config"
 
-# Inizializza il file di configurazione prima dell'elaborazione
-#sed -i "s/^previsionale=.*/previsionale=False/" "$config_file"
-
 # Elenco delle ruote del Lotto (escludendo "Nazionale")
 ruote=("Bari" "Cagliari" "Firenze" "Genova" "Milano" "Napoli" "Palermo" "Roma" "Torino" "Venezia")
+
+# Intestazione
+separator_line=$(printf '=%.0s' {1..80})
+echo "$separator_line"
+header="Estrazione\t\tRUOTA\t\t"
+columns=""
+for i in $(seq 1 5); do
+    columns="${columns}${i}o\t"
+done
+header="${header}${columns}"
+echo -e "$header"
+echo "$separator_line"
 
 # Ciclo su ogni ruota e richiamo il programma
 for ruota in "${ruote[@]}"; do
@@ -31,7 +41,7 @@ for ruota in "${ruote[@]}"; do
     sed -i "s/^ruota=.*/ruota=${ruota}/" "$config_file"
 
     # Esegui il programma Python e filtra l'output in base alla stringa fornita
-    python.exe ../src/main.py | grep -E "$string_to_grep"
+    python.exe "$main_script" | grep -E "$string_to_grep"
 done
 
 # Ripristina il file di configurazione originale

@@ -1,150 +1,147 @@
-## Giancolotto
-Giancolotto è un\'applicazione Python per estrarre e analizzare dati delle estrazioni al gioco del lotto.
+# Giancolotto
+Giancolotto è un'applicazione Python per estrarre e analizzare i dati delle estrazioni del gioco del Lotto. 
+Il progetto include script di supporto per facilitare le analisi avanzate, come la ricerca delle frequenze, l'identificazione di filotti, l'indice minimo di copertura ed altro ancora.
 
-## Dipendenze
-- Python 3.x
+---
+
+## Requisiti
+- **Python 3.x**: Assicurati che sia installato e configurato nel tuo sistema.
+- **Librerie Python**:
+  - `requests`
+  - `bs4` (BeautifulSoup)
+  - `configparser`
+  - `pymongo`
+  - `colorama`
+
+---
 
 ## Installazione
-1. Clona il repository:
+1. **Clona il repository**:
+   ```bash
    git clone https://github.com/gcomneno/giancolotto.git
-   cd giancolotto/scripts
+   cd giancolotto
+   ```
+
+2. **Installa le dipendenze**:
+   Usa `pip` per installare le librerie richieste:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configura l'applicazione**:
+   Modifica il file `config.ini` per personalizzare i parametri come numero di estrazioni da analizzare, ruote specifiche, e filtri.
+
+---
 
 ## Configurazione
-Modifica il file config.ini per personalizzare la configurazione dell\'applicazione.
+### File `config.ini`
+Il file di configurazione contiene le seguenti sezioni principali:
 
-## [Scraping] Il sito dal quale recuperare le estrazioni del Lotto è:
-url=https://www.estrazionedellotto.it/ultime-estrazioni-lotto
+#### [Scraping]
+- **`url`**: URL del sito per lo scraping delle estrazioni.
+  ```ini
+  url=https://www.estrazionedellotto.it/ultime-estrazioni-lotto
+  ```
+- **`num_estr`**: Numero di estrazioni da recuperare. Valore speciale `999` per l'ultima estrazione.
+- **`ruota`**: Specifica una ruota (es. `Bari`, `Napoli`, ecc.) o lascia vuoto per analizzare tutte.
 
-# Imposta il Numero di estrazioni da recuperare
-num_estr=1
+#### [Filtering]
+- **`filtro`**: Modalità di analisi (`numeri` o `cifre`).
+- **`numeri`**: Lista di numeri da evidenziare, separati da virgola.
+- **`cifre`**: Lista di cifre da evidenziare, separati da virgola.
 
-# Imposta Ruota specifica (lascia vuoto per tutte le ruote)
-# Bari Cagliari Firenze Genova Milano Napoli Palermo Roma Torino Venezia
-ruota=
+#### [Persistence]
+- Parametri per salvare i dati in un database MongoDB:
+  ```ini
+  host=localhost
+  porta=27017
+  database=giancolotto
+  ```
 
-# [Filtering]
-filtro=per numeri o cifre?
-numeri=8,11
-cifre=0,9
+---
 
-## Risorse Aggiuntive
-Giancolotto e' corredato da svariati script Python automatizzati dai relativi script di Shell che  utilizzano in maniera mirata le singole funzionalità in base allo specifico obiettivo:
+## Script di Shell
+Giancolotto include diversi script Bash per automatizzare le analisi:
 
-- frequenze.py
-- filotti.py
-- imc.py
-- repetita.py
-- strategy.py
-
-## TODO list
-Chi fosse interessato può segnalare BUG o inserire le proprie richieste di nuove funzionalità o miglioramente di quelle già esistenti, semplicemente aggiornando il file TODO.md
-
-### Esempi di utilizzo dei vari script di Shell
+### **`get.sh`**
+Esegue il programma principale Python basandosi sulla configurazione di `config.ini`:
+```bash
 ./get.sh
-    Esegue il programma in Python (main) in base alla configurazione data nel file config.ini
+```
 
-./get.sh | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
-    Ti prende la colonna con il numero di cifre uscite (vale solo quando il filtro è impostato a 'cifre' ovviamente!) e te la
-    scrive come fosse un array, su una sola riga e separati dalla virgola. Utile per darla in pasto a pcond.py !
-
+### **`get_all.sh`**
+Estrae i dati da un intervallo di anni specificato:
+```bash
 ./get_all.sh {anno_iniziale} {anno_finale}
-    Come get.sh ma visualizza tutte le ruote negli anni da/a specificati come parametro. Il valore predefinito è l'anno corrente.
+```
+- Esempio:
+  ```bash
+  ./get_all.sh 2020 2025
+  ```
 
-./get_all.sh 2023 | grep -E "<2>|<3>" | sort -k4,4r -k5,5r -k6,6r
-    Ricerca i numeri (o le cifre) impostati nel Filtering del config.ini per sorte di ambo o terno e nel biennio 2023/2024. 
-    Ordina il risultato per data decrescente (AA/MM/GG)
+### **`cerca_su_tutte.sh`**
+Cerca dati specifici in tutte le estrazioni:
+```bash
+./cerca_su_tutte.sh "<pattern>"
+```
+Esempio: visualizza i risultati dell'ultima estrazione:
+```bash
+./cerca_su_tutte.sh "[U]"
+```
 
-./get_all.sh 2000 2024 | grep "<3>" | sort -k1,2
-    Ricerca i numeri (o le cifre) impostati nel Filtering del config.ini per sorte di terno, cercando tra i 25 anni dal 2000 al 2024.
-    Ordina il risultato per numero di estrazione crescente.
-
-./cerca_su_tutte.sh "[U]" (oppure "[0]" se il valore di previsionale è false!)
-    Visualizza l\'Ultima Estrazione per intero
-
+### **`classifica.sh`**
+Calcola la frequenza dei numeri estratti in un determinato intervallo:
+```bash
 ./cerca_su_tutte.sh "[U]" | ./classifica.sh
-    Visualizza una tabella delle presenze dei numeri usciti nell\'ultima estrazione, ordinato per presenza decrescente
+```
 
-./cerca_su_tutte.sh "[U]" | ./classifica.sh | .trova_mancanti.sh
-    Visualizza i numeri che non sono usciti nell\'ultima estrazione
+### **`trova_mancanti.sh`**
+Identifica i numeri non estratti in un determinato intervallo:
+```bash
+./cerca_su_tutte.sh "[U]" | ./classifica.sh | ./trova_mancanti.sh
+```
 
-./cerca_su_tutte.sh "152|153|154|155|156" | ./classifica.sh | ./trova_mancanti.sh
-    Restituisce i numeri che ancora non sono usciti nelle estrazioni 152,153,154,155 e 156
+---
 
-./cerca_su_tutte.sh "<2>|<3>"
-    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di ambo oppure di terno
+## Script Python principali
 
-./cerca_su_tutte.sh "<4>" | sort -k1
-    Ricerca il filtro impostato (numeri o cifre) in config.ini per sorte di quaterna ed ordina il risultato per estrazione decrescente
-
-./cerca_su_tutte.sh "[4]" | awk '{print $6, $7, $8, $9, $10}'
-    Ricerca soltanto la fascia estrattiva 4 (quintultima estrazione partendo da 0) su tutte le ruote e visualizza solo i 5 numeri estratti
-
-./cerca_su_tutte.sh "[4]|[6]"
-    Ricerca sia la fascia estrattiva 4 che la 6 su tutte le ruote e visualizza tutte le informazioni
-
-./cerca_su_tutte.sh "[4]" | awk '{print $6, $7, $8, $9, $10}' | tr ' ' ',' | tr ',' '\n' | sort -n | uniq | paste -sd ','
-    Ricerca la fascia 4 su tutte le ruote e visualizza i numeri come un array univoco separato da virgola
-
-./cerca_su_tutte.sh "n. " | awk '{num = substr($10, 2); if (num ~ /^[0-9]+$/) printf "%s, ", num}' | sed 's/, $//'
-    Come sopra ma lo fa per l\'intero anno su tutte le ruote
-
-./ultima_su_tutte.sh
-    Verifica le sorti che avrebbe ottenuto l'ultima cinquina appena estratta nelle estrazioni precedenti (esclusa la sorte di estratto semplice). La ricerca s'intende per singolo anno solare, per default viene considerato quello corrente.
-
-./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{print $1, $5}' | sort -k2,2nr -k1,1 | grep -v " 0"
-    Verifica la tua strategia di gioco (in strategy.py) per tutti i valori di fascia nel database
-
-./run_strategy.sh 0 31 2 2 | grep "Rapporto:" | awk '{ok += $5; ko += $8} END {if (ko > 0) {ratio = ok / ko} else {ratio = "Inf"}; print "Totale OK:", ok, "Totale KO:", ko, "Rapporto:", ratio}'
-    Come sopra ma analizzando il rapporto da successi e fallimenti della strategia
-
-### Script imc.py
-Lo script `imc.py` permette di calcolare l'Insieme Minimo di Copertura di un dataset.
-Far riferimeno al manuale utente: IMC.docx
-
-### Script frequenze.py
-Lo script `frequenze.py` permette di calcolare e analizzare la frequenza di numeri estratti in un dataset. Offre funzionalità avanzate come la visualizzazione dei dati in formato testuale o grafico e il supporto per filtri specifici.
-
-#### Esempi di utilizzo:
-- **Modalità testuale:**
-
+### **`frequenze.py`**
+Analizza la frequenza dei numeri estratti:
 ```bash
 python ./src/utils/frequenze.py --mode text
 ```
-Output:
-```plaintext
-Presenze dei Numeri:
-Numero 20: 54 presenze
-Numero 24: 51 presenze
-Numero 06: 49 presenze
-...
 
-Frequenza per Fascia di Decine:
- Fascia di Decine  Frequenza  Percentuale
-       20-29         100        25.00%
-       10-19          80        20.00%
-...
-```
-- **Modalità grafica:**
+### **`imc.py`**
+Calcola l'Insieme Minimo di Copertura di un dataset.
 
+### **`strategy.py`**
+Verifica strategie di gioco per il Lotto.
+
+Esempio:
 ```bash
-python ./src/utils/frequenze.py --mode graphic
+./run_strategy.sh 0 31 2 2
 ```
-Visualizza due grafici:
-1. Frequenza dei numeri.
-2. Frequenza per fasce di decine.
 
-- **Filtrare i risultati con `grep` (Linux):**
-Filtrare i numeri nella fascia 20-29:
+---
+
+## Esempi di utilizzo combinato
+### Ricerca e analisi
 ```bash
-python ./src/utils/frequenze.py | grep -E 'Numero 2[0-9]:'
+./get_all.sh 2023 | grep "<3>" | ./classifica.sh
 ```
-Output:
-```plaintext
-Numero 20: 54 presenze
-Numero 24: 51 presenze
-Numero 22: 48 presenze
-...
+
+### Frequenze con numeri mancanti
+```bash
+./cerca_su_tutte.sh "[U]" | ./classifica.sh | ./trova_mancanti.sh
 ```
+
+---
+
+## TODO list
+Chi fosse interessato può segnalare bug o richiedere nuove funzionalità aggiornando il file `TODO.md`.
+
+---
 
 ## Licenza
-Questo progetto è distribuito con la licenza MIT.
+Questo progetto è distribuito con la licenza MIT. Sentiti libero di contribuire!
+```

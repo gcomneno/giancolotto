@@ -2,14 +2,26 @@
 
 echo "Inizio esecuzione: $(date)"
 
+# Determina la directory dello script
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Directory root del progetto (una directory sopra la directory dello script)
+project_root="$(realpath "${script_dir}/..")"
+
+# Percorso assoluto del file di database
+dataset_file="${project_root}/dataset/database.$(date +%Y).md"
+
+# Percorso assoluto dello script principale
+main_script="${project_root}/scripts/ultima_su_tutte.sh"
+
 num_estr=${1:-999}
 
-: > ../dataset/database.2025.md
+: > $dataset_file
 echo "Il dataset è stato resettato."
 
-for ((i=2; i<=999; i++)); do
+for ((i=2; i<=$num_estr; i++)); do
     # Richiama lo script che produce l'output tabellare
-    output=$(./ultima_su_tutte.sh "$i")
+    output=$("$main_script" "$i")
 
     # Estrai la riga contenente "Estrazione"
     estrazione_line=$(echo "$output" | grep "Estrazione:")
@@ -20,6 +32,7 @@ for ((i=2; i<=999; i++)); do
     if [[ "$i" > "$numero_estrazione" ]]; then
         break
     fi
+
     # Estrai RUOTA e DIST, saltando righe non pertinenti e scartando le distanze "N/A"
     lines=$(echo "$output" | \
       awk -F'|' '
@@ -41,7 +54,7 @@ for ((i=2; i<=999; i++)); do
 
     if [[ -n "$lines" ]]; then
         # Aggiungi l’output al dataset
-        echo "$lines" >> ../dataset/database.2025.md
+        echo "$lines" >> "$dataset_file"
         echo "Riga $lines aggiunta al dataset per l'estrazione $i"
     else
         echo "Nessun risultato valido (distanza != N/A) per l'estrazione $i"
