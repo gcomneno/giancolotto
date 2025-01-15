@@ -2,10 +2,13 @@
 __pycache__/
 *.pyc
 *.pyo
+
+# File temporanei
 *.log
-
-config.ini
 config.ini.bak
-database.*.md
 
-bak
+# File di configurazione
+config.ini
+
+# Database
+dataset/cifrolotto.data
