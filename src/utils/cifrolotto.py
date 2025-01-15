@@ -7,7 +7,13 @@ import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 dataset_path = os.path.join(script_dir, "../../dataset/cifrolotto.data")
 
-def category_count(dataset, exclude_parentheses=False):
+# Categorie conosciute
+KNOWN_CATEGORIES = {
+    "TSG", "TCG", "TSS", "TCS", "BSG", "BCG", "BSS", "BCS",
+    "GT", "GB", "TD", "DT", "TPA", "ATP", "BMA", "ABM", "MD"
+}
+
+def category_count(dataset):
     """
     Conta le categorie presenti nel dataset con la possibilità di 
     escludere quelle racchiuse tra parentesi tonde ('equivalenze').
@@ -16,79 +22,62 @@ def category_count(dataset, exclude_parentheses=False):
     ----------
     dataset : str
         Stringa che rappresenta il dataset da analizzare.
-    exclude_parentheses : bool
-        Se True, esclude le categorie tra parentesi tonde dal conteggio.
     """
-    # Rimuove i prefissi delle ruote (es. "BA:", "CA:")
-    cleaned_text = re.sub(r'^[A-Z]{2}:\s*', '', dataset, flags=re.MULTILINE)
-
-    # Se richiesto, rimuove le categorie tra parentesi tonde
-    if exclude_parentheses:
-        cleaned_text = re.sub(r'\([^)]+\)', '', cleaned_text)
+    # Rimuove i prefissi delle ruote (es. "BA\t", "CA\t")
+    cleaned_text = re.sub(r'^[A-Z]{2}\t', '', dataset, flags=re.MULTILINE)
 
     # Trova categorie e moltiplicatori
-    categories = re.findall(r'(\d*)([A-Z]+)', cleaned_text)
+    categories = re.findall(r'(\d*)\|([A-Z]+)', cleaned_text)
     category_counter = Counter()
 
     # Conta le categorie
     for multiplier, category in categories:
-        multiplier = int(multiplier) if multiplier else 1
-        category_counter[category] += multiplier
+        if category in KNOWN_CATEGORIES:
+            multiplier = int(multiplier) if multiplier else 1
+            category_counter[category] += multiplier
 
-    # Categorie con lunghezza maggiore di 2 (classificabili come Semplici/Concatenate e Direzione Movimento)
-    semplici = {k: v for k, v in category_counter.items() if len(k) > 2 and k[1] == 'S'}
-    concatenate = {k: v for k, v in category_counter.items() if len(k) > 2 and k[1] == 'C'}
-    salire = {k: v for k, v in category_counter.items() if len(k) > 2 and k[2] == 'S'}
-    scendere = {k: v for k, v in category_counter.items() if len(k) > 2 and k[2] == 'G'}
-
-    # Categorie di lunghezza 2 (altre categorie)
-    altre = {k: v for k, v in category_counter.items() if len(k) == 2}
-
+    # Suddividi le categorie in base ai criteri
+    semplici = {k: v for k, v in category_counter.items() if k.startswith("TS") or k.startswith("BS")}
+    concatenate = {k: v for k, v in category_counter.items() if k.startswith("TC") or k.startswith("BC")}
+    salire = {k: v for k, v in category_counter.items() if "S" in k[2:]}
+    scendere = {k: v for k, v in category_counter.items() if "G" in k[2:]}
+    altre = {k: v for k, v in category_counter.items() if k in ['GT', 'GB', 'MD', 'TD', 'DT', 'TPA', 'BMA', 'ATP', 'ABM']}
+    
     # Stampa dei risultati per ogni gruppo
     print("\nSuddivisione per Semplici:")
-    totale_semplici = 0
+    totale_semplici = sum(semplici.values())
     for categoria, conteggio in semplici.items():
         print(f"{categoria}: {conteggio}")
-        totale_semplici += conteggio
     print(f"Totale Semplici: {totale_semplici}")
 
     print("\nSuddivisione per Concatenate:")
-    totale_concatenate = 0
+    totale_concatenate = sum(concatenate.values())
     for categoria, conteggio in concatenate.items():
         print(f"{categoria}: {conteggio}")
-        totale_concatenate += conteggio
     print(f"Totale Concatenate: {totale_concatenate}")
 
     print("\nMovimento a Salire:")
-    totale_sali = 0
+    totale_sali = sum(salire.values())
     for categoria, conteggio in salire.items():
         print(f"{categoria}: {conteggio}")
-        totale_sali += conteggio
     print(f"Totale Salire: {totale_sali}")
 
     print("\nMovimento a Scendere:")
-    totale_scendi = 0
+    totale_scendi = sum(scendere.values())
     for categoria, conteggio in scendere.items():
         print(f"{categoria}: {conteggio}")
-        totale_scendi += conteggio
     print(f"Totale Scendere: {totale_scendi}")
 
     print("\nAltre Categorie:")
-    totale_altre = 0
+    totale_altre = sum(altre.values())
     for categoria, conteggio in altre.items():
         print(f"{categoria}: {conteggio}")
-        totale_altre += conteggio
     print(f"Totale Altre: {totale_altre}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Conta le categorie nel dataset e fornisce una suddivisione dettagliata.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument(
-        "-e", "--exclude",
-        action="store_true",
-        help="Escludi le categorie tra parentesi tonde dal conteggio"
     )
     args = parser.parse_args()
 
@@ -98,7 +87,7 @@ if __name__ == "__main__":
             dataset = file.read()
 
         # Esegue la funzione principale
-        category_count(dataset, exclude_parentheses=args.exclude)
+        category_count(dataset)
 
     except FileNotFoundError:
         print("Errore: il file 'cifrolotto.data' non è stato trovato.")
