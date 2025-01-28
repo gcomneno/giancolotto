@@ -41,8 +41,8 @@ def category_count(dataset):
     concatenate = {k: v for k, v in category_counter.items() if k.startswith("TC") or k.startswith("BC")}
     salire = {k: v for k, v in category_counter.items() if "S" in k[2:]}
     scendere = {k: v for k, v in category_counter.items() if "G" in k[2:]}
-    altre = {k: v for k, v in category_counter.items() if k in ['GT', 'GB', 'MD', 'TD', 'DT', 'TPA', 'BMA', 'ATP', 'ABM']}
-    
+    altre = {k: v for k, v in category_counter.items() if k in ['GT', 'GB', 'TD', 'DT', 'TPA', 'ATP', 'BMA', 'ABM', 'MD', 'DM']}
+
     # Stampa dei risultati per ogni gruppo
 #    print("\nSuddivisione per Semplici:")
 #    totale_semplici = sum(semplici.values())
@@ -68,10 +68,15 @@ def category_count(dataset):
 #        print(f"{categoria}: {conteggio}")
 #    print(f"Totale Scendere: {totale_scendi}")
 
-    print("\nAltre Categorie:")
-    totale_altre = sum(altre.values())
-    for categoria, conteggio in altre.items():
+    # Ordina le categorie per conteggio decrescente
+    sorted_categories = sorted(category_counter.items(), key=lambda x: x[1], reverse=True)
+
+    # Stampa dei risultati
+    print("\nAltre Categorie (ordinate per punteggio decrescente):")
+    totale_altre = 0
+    for categoria, conteggio in sorted_categories:
         print(f"{categoria}: {conteggio}")
+        totale_altre += conteggio
     print(f"Totale Altre: {totale_altre}")
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ __pycache__/
 
 # File temporanei
 *.log
-config.ini.bak
+*.bak
 
 # File di configurazione
 config.ini

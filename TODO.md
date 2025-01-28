@@ -1,1 +1,1 @@
-1. Eliminare MongoDB e passare a MySQL, salvando quali informazioni? Iniziamo con ke estrazioni, poi pensare a quali statistiche/dati includere;
+1. Eliminare MongoDB e passare a MySQL, salvando quali informazioni? Iniziamo con le estrazioni, poi pensare a quali statistiche/dati includere
