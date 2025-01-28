@@ -57,7 +57,7 @@ fi
 # Loop per eseguire lo script Python senza parametri DIFFERENZA volte
 for ((i = 0; i < DIFFERENZA; i++)); do
     sed -i "s/^offset_estr=.*/offset_estr=${i}/" "$config_file"
-    echo "Esecuzione ${i} di $DIFFERENZA"
+    echo "Esecuzione ${i+1} di $DIFFERENZA"
     python.exe ./src/utils/cifrolotto_categorizer.py --output-file "$OUTPUT_FILE"
     if [ $? -ne 0 ]; then
         echo "Errore durante l'esecuzione dello script Python nella iterazione $i. Terminazione."
