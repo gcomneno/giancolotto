@@ -10,7 +10,7 @@ dataset_path = os.path.join(script_dir, "../../dataset/cifrolotto.data")
 # Categorie conosciute
 KNOWN_CATEGORIES = {
     "TSG", "TCG", "TSS", "TCS", "BSG", "BCG", "BSS", "BCS",
-    "GT", "GB", "TD", "DT", "TPA", "ATP", "BMA", "ABM", "MD"
+    "GT", "GB", "TD", "DT", "TPA", "ATP", "BMA", "ABM", "MD", "DM"
 }
 
 def category_count(dataset):
@@ -44,29 +44,29 @@ def category_count(dataset):
     altre = {k: v for k, v in category_counter.items() if k in ['GT', 'GB', 'MD', 'TD', 'DT', 'TPA', 'BMA', 'ATP', 'ABM']}
     
     # Stampa dei risultati per ogni gruppo
-    print("\nSuddivisione per Semplici:")
-    totale_semplici = sum(semplici.values())
-    for categoria, conteggio in semplici.items():
-        print(f"{categoria}: {conteggio}")
-    print(f"Totale Semplici: {totale_semplici}")
+#    print("\nSuddivisione per Semplici:")
+#    totale_semplici = sum(semplici.values())
+#    for categoria, conteggio in semplici.items():
+#        print(f"{categoria}: {conteggio}")
+#    print(f"Totale Semplici: {totale_semplici}")
 
-    print("\nSuddivisione per Concatenate:")
-    totale_concatenate = sum(concatenate.values())
-    for categoria, conteggio in concatenate.items():
-        print(f"{categoria}: {conteggio}")
-    print(f"Totale Concatenate: {totale_concatenate}")
+#    print("\nSuddivisione per Concatenate:")
+#    totale_concatenate = sum(concatenate.values())
+#    for categoria, conteggio in concatenate.items():
+#        print(f"{categoria}: {conteggio}")
+#    print(f"Totale Concatenate: {totale_concatenate}")
 
-    print("\nMovimento a Salire:")
-    totale_sali = sum(salire.values())
-    for categoria, conteggio in salire.items():
-        print(f"{categoria}: {conteggio}")
-    print(f"Totale Salire: {totale_sali}")
+#    print("\nMovimento a Salire:")
+#    totale_sali = sum(salire.values())
+#    for categoria, conteggio in salire.items():
+#        print(f"{categoria}: {conteggio}")
+#    print(f"Totale Salire: {totale_sali}")
 
-    print("\nMovimento a Scendere:")
-    totale_scendi = sum(scendere.values())
-    for categoria, conteggio in scendere.items():
-        print(f"{categoria}: {conteggio}")
-    print(f"Totale Scendere: {totale_scendi}")
+#    print("\nMovimento a Scendere:")
+#    totale_scendi = sum(scendere.values())
+#    for categoria, conteggio in scendere.items():
+#        print(f"{categoria}: {conteggio}")
+#    print(f"Totale Scendere: {totale_scendi}")
 
     print("\nAltre Categorie:")
     totale_altre = sum(altre.values())

@@ -11,4 +11,4 @@ config.ini.bak
 config.ini
 
 # Database
-dataset/cifrolotto.data
+dataset

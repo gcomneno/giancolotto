@@ -1,0 +1,28 @@
+[Scraping]
+url=https://www.estrazionedellotto.it/risultati/archivio-lotto-2025
+
+# Numero di estrazioni iniziali da saltare, a partire dalla prima (=0, tutte)
+offset_estr=2
+
+# Numero di estrazioni da recuperare a partire dall'offset (almeno 1 per: analisi; almeno 2 per: verifica; =999, per tutte)
+num_estr=3
+
+# Ruota specifica (lascia vuoto per tutte le ruote)
+# Bari Cagliari Firenze Genova Milano Napoli Palermo Roma Torino Venezia
+ruota=Venezia
+
+[Filtering]
+filtro=cifre
+numeri=08,11
+cifre=9
+
+[Stats]
+# Escludi l'ultima estrazione dai calcoli statistici del Filtering? (No=False, pre-analisi; Si=True, post-verifica)
+previsionale=True
+
+[Persistence]
+attiva=False
+purga=False
+host=mongodb
+porta=27017
+database=estrazioni

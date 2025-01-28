@@ -18,19 +18,20 @@ class CifrolottoCategorizer:
         "GB": [(10, 10)],
         "TD": [(1, 10)],
         "DT": [(10, 1)],
-        "MD": [(5, 6), (6, 5)],
-        "TSG": [(1, 2), (3, 4)],
-        "BSG": [(7, 8), (9, 10)],
-        "TCG": [(1, 2), (2, 3), (3, 4)],
-        "BCG": [(7, 8), (8, 9), (9, 10)],
-        "TSS": [(4, 3), (2, 1)],
-        "BSS": [(10, 9), (8, 7)],
-        "TCS": [(4, 3), (3, 2), (2, 1)],
-        "BCS": [(10, 9), (9, 8), (8, 7)],
-        "TPA": [(1, 2)],
-        "BMA": [(9, 10)],
-        "ATP": [(2, 1)],
-        "ABM": [(10, 9)],
+        "MD": [(5, 6)],
+        "DM": [(6, 5)],
+#        "TSG": [(1, 2), (3, 4)],
+#        "BSG": [(7, 8), (9, 10)],
+#        "TCG": [(1, 2), (2, 3), (3, 4)],
+#        "BCG": [(7, 8), (8, 9), (9, 10)],
+#        "TSS": [(4, 3), (2, 1)],
+#        "BSS": [(10, 9), (8, 7)],
+#        "TCS": [(4, 3), (3, 2), (2, 1)],
+#        "BCS": [(10, 9), (9, 8), (8, 7)],
+#        "TPA": [(1, 2)],
+#        "BMA": [(9, 10)],
+#        "ATP": [(2, 1)],
+#        "ABM": [(10, 9)],
     }
 
     def __init__(self):
@@ -95,22 +96,30 @@ class CifrolottoCategorizer:
             return None
 
     def parse_cifrolotto(self, output, start_index):
+        """
+        Estrae la classifica CIFROLOTTO per una specifica ruota.
+        """
         cifrolotto_start_regex = re.compile(r"Cifra\s+Pres\.\n", re.IGNORECASE)
         next_header_regex = re.compile(r"={5,}")
 
+        # Trova l'inizio del blocco CIFROLOTTO
         start_match = cifrolotto_start_regex.search(output, start_index)
         if not start_match:
-            print(f"[DEBUG] Start of CIFROLOTTO block not found for start_index {start_index}.")
+            print(f"Errore: Nessuna classifica CIFROLOTTO trovata alla posizione iniziale {start_index}.")
             return {}
 
+        # Trova la fine del blocco CIFROLOTTO
         end_match = next_header_regex.search(output, start_match.end())
         end_index = end_match.start() if end_match else len(output)
 
+        # Estrai il blocco CIFROLOTTO
         cifrolotto_data = output[start_match.end():end_index]
         cifrolotto = {}
+
+        # Itera sulle righe e valida i dati
         for line in cifrolotto_data.splitlines():
             parts = line.split()
-            if len(parts) >= 2:
+            if len(parts) >= 2 and parts[1].isdigit():  # Controlla se parts[1] è un numero intero valido
                 cifra, pres = parts[0], int(parts[1])
                 cifrolotto[cifra] = pres
 
