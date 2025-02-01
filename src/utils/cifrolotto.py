@@ -15,8 +15,7 @@ KNOWN_CATEGORIES = {
 
 def category_count(dataset):
     """
-    Conta le categorie presenti nel dataset con la possibilità di 
-    escludere quelle racchiuse tra parentesi tonde ('equivalenze').
+    Conta le categorie presenti nel dataset
 
     Parametri:
     ----------
@@ -69,7 +68,7 @@ def category_count(dataset):
 #    print(f"Totale Scendere: {totale_scendi}")
 
     # Ordina le categorie per conteggio decrescente
-    sorted_categories = sorted(category_counter.items(), key=lambda x: x[1], reverse=True)
+    sorted_categories = sorted(altre.items(), key=lambda x: x[1], reverse=True)
 
     # Stampa dei risultati
     print("\nAltre Categorie (ordinate per punteggio decrescente):")
