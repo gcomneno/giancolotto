@@ -9,8 +9,8 @@ dataset_path = os.path.join(script_dir, "../../dataset/cifrolotto.data")
 
 # Categorie conosciute
 KNOWN_CATEGORIES = {
-    "TSG", "TCG", "TSS", "TCS", "BSG", "BCG", "BSS", "BCS",
-    "GT", "GB", "TD", "DT", "TPA", "ATP", "BMA", "ABM", "MD", "DM"
+    "AA", "AB", "BA", "BB",
+#    "GT", "GB", "TD", "DT", "MD", "DM"
 }
 
 def category_count(dataset):
@@ -36,47 +36,16 @@ def category_count(dataset):
             category_counter[category] += multiplier
 
     # Suddividi le categorie in base ai criteri
-    semplici = {k: v for k, v in category_counter.items() if k.startswith("TS") or k.startswith("BS")}
-    concatenate = {k: v for k, v in category_counter.items() if k.startswith("TC") or k.startswith("BC")}
-    salire = {k: v for k, v in category_counter.items() if "S" in k[2:]}
-    scendere = {k: v for k, v in category_counter.items() if "G" in k[2:]}
-    altre = {k: v for k, v in category_counter.items() if k in ['GT', 'GB', 'TD', 'DT', 'TPA', 'ATP', 'BMA', 'ABM', 'MD', 'DM']}
-
-    # Stampa dei risultati per ogni gruppo
-#    print("\nSuddivisione per Semplici:")
-#    totale_semplici = sum(semplici.values())
-#    for categoria, conteggio in semplici.items():
-#        print(f"{categoria}: {conteggio}")
-#    print(f"Totale Semplici: {totale_semplici}")
-
-#    print("\nSuddivisione per Concatenate:")
-#    totale_concatenate = sum(concatenate.values())
-#    for categoria, conteggio in concatenate.items():
-#        print(f"{categoria}: {conteggio}")
-#    print(f"Totale Concatenate: {totale_concatenate}")
-
-#    print("\nMovimento a Salire:")
-#    totale_sali = sum(salire.values())
-#    for categoria, conteggio in salire.items():
-#        print(f"{categoria}: {conteggio}")
-#    print(f"Totale Salire: {totale_sali}")
-
-#    print("\nMovimento a Scendere:")
-#    totale_scendi = sum(scendere.values())
-#    for categoria, conteggio in scendere.items():
-#        print(f"{categoria}: {conteggio}")
-#    print(f"Totale Scendere: {totale_scendi}")
+    altre = {k: v for k, v in category_counter.items() if k in ['AA', 'AB', 'BA', 'BB']}
 
     # Ordina le categorie per conteggio decrescente
     sorted_categories = sorted(altre.items(), key=lambda x: x[1], reverse=True)
 
     # Stampa dei risultati
-    print("\nAltre Categorie (ordinate per punteggio decrescente):")
-    totale_altre = 0
+    totale_categorie = 0
     for categoria, conteggio in sorted_categories:
-        print(f"{categoria}: {conteggio}")
-        totale_altre += conteggio
-    print(f"Totale Altre: {totale_altre}")
+        print(f"[INFO] {categoria}: {conteggio}")
+        totale_categorie += conteggio
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

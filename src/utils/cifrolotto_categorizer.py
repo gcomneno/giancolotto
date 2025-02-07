@@ -1,6 +1,9 @@
 import os
 import subprocess
 import re
+import argparse
+
+from datetime import datetime  # Importa solo `datetime` dalla libreria
 
 class CifrolottoCategorizer:
     MAIN_SCRIPT = "./scripts/get_all.sh"
@@ -14,28 +17,28 @@ class CifrolottoCategorizer:
     }
 
     CATEGORY_RULES = {
-        "GT": [(1, 1)],
-        "GB": [(10, 10)],
-        "TD": [(1, 10)],
-        "DT": [(10, 1)],
-        "MD": [(5, 6)],
-        "DM": [(6, 5)],
-#        "TSG": [(1, 2), (3, 4)],
-#        "BSG": [(7, 8), (9, 10)],
-#        "TCG": [(1, 2), (2, 3), (3, 4)],
-#        "BCG": [(7, 8), (8, 9), (9, 10)],
-#        "TSS": [(4, 3), (2, 1)],
-#        "BSS": [(10, 9), (8, 7)],
-#        "TCS": [(4, 3), (3, 2), (2, 1)],
-#        "BCS": [(10, 9), (9, 8), (8, 7)],
-#        "TPA": [(1, 2)],
-#        "BMA": [(9, 10)],
-#        "ATP": [(2, 1)],
-#        "ABM": [(10, 9)],
+        "AA": [(1, 1)], 
+        "AB": [(1, 2)], 
+        "BA": [(2, 1)], 
+        "BB": [(2, 2)],
+#        "GT": [(1, 1)],
+#        "GB": [(10, 10)],
+#        "TD": [(1, 10)],
+#        "DT": [(10, 1)],
+#        "MD": [(5, 6)],
+#        "DM": [(6, 5)],
     }
+
+    ANNO_SCELTO = 0
 
     def __init__(self):
         self.MAIN_SCRIPT = os.path.abspath(self.MAIN_SCRIPT)
+
+        self.ANNO_SCELTO = datetime.now().year
+        parser = argparse.ArgumentParser(description="Categorizzatore CIFROLOTTO")
+        parser.add_argument("--year", type=int, default=datetime.now().year, help="Anno da analizzare (default: anno corrente)")
+        args = parser.parse_args()
+        self.ANNO_SCELTO = args.year
 
     def run(self):
         print(f"Esecuzione dello script principale {self.MAIN_SCRIPT}, in corso...")
@@ -64,8 +67,9 @@ class CifrolottoCategorizer:
             raise FileNotFoundError(f"Lo script {self.MAIN_SCRIPT} non esiste.")
 
         try:
+            anno_str = str(self.ANNO_SCELTO)
             result = subprocess.run(
-                ["bash", self.MAIN_SCRIPT],
+                ["bash", self.MAIN_SCRIPT, anno_str, anno_str],
                 check=True,
                 text=True,
                 capture_output=True

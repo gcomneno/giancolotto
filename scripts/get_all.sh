@@ -14,7 +14,7 @@ main_script="${project_root}/src/main.py"
 
 # Verifica che il file di configurazione esista
 if [[ ! -f "${config_file}" ]]; then
-    echo "Errore: File di configurazione non trovato: ${config_file}"
+    echo "[ERROR] File di configurazione non trovato: ${config_file}"
     exit 1
 fi
 
