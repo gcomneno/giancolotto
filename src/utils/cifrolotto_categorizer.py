@@ -2,7 +2,6 @@ import os
 import subprocess
 import re
 import argparse
-
 from datetime import datetime  # Importa solo `datetime` dalla libreria
 
 class CifrolottoCategorizer:
@@ -16,25 +15,12 @@ class CifrolottoCategorizer:
         "Torino": "TO", "Venezia": "VE"
     }
 
-    CATEGORY_RULES = {
-        "AA": [(1, 1)], 
-        "AB": [(1, 2)], 
-        "BA": [(2, 1)], 
-        "BB": [(2, 2)],
-#        "GT": [(1, 1)],
-#        "GB": [(10, 10)],
-#        "TD": [(1, 10)],
-#        "DT": [(10, 1)],
-#        "MD": [(5, 6)],
-#        "DM": [(6, 5)],
-    }
-
     ANNO_SCELTO = 0
 
     def __init__(self):
         self.MAIN_SCRIPT = os.path.abspath(self.MAIN_SCRIPT)
-
         self.ANNO_SCELTO = datetime.now().year
+
         parser = argparse.ArgumentParser(description="Categorizzatore CIFROLOTTO")
         parser.add_argument("--year", type=int, default=datetime.now().year, help="Anno da analizzare (default: anno corrente)")
         args = parser.parse_args()
@@ -100,30 +86,23 @@ class CifrolottoCategorizer:
             return None
 
     def parse_cifrolotto(self, output, start_index):
-        """
-        Estrae la classifica CIFROLOTTO per una specifica ruota.
-        """
         cifrolotto_start_regex = re.compile(r"Cifra\s+Pres\.\n", re.IGNORECASE)
         next_header_regex = re.compile(r"={5,}")
 
-        # Trova l'inizio del blocco CIFROLOTTO
         start_match = cifrolotto_start_regex.search(output, start_index)
         if not start_match:
             print(f"Errore: Nessuna classifica CIFROLOTTO trovata alla posizione iniziale {start_index}.")
             return {}
 
-        # Trova la fine del blocco CIFROLOTTO
         end_match = next_header_regex.search(output, start_match.end())
         end_index = end_match.start() if end_match else len(output)
 
-        # Estrai il blocco CIFROLOTTO
         cifrolotto_data = output[start_match.end():end_index]
         cifrolotto = {}
 
-        # Itera sulle righe e valida i dati
         for line in cifrolotto_data.splitlines():
             parts = line.split()
-            if len(parts) >= 2 and parts[1].isdigit():  # Controlla se parts[1] è un numero intero valido
+            if len(parts) >= 2 and parts[1].isdigit():
                 cifra, pres = parts[0], int(parts[1])
                 cifrolotto[cifra] = pres
 
@@ -132,13 +111,6 @@ class CifrolottoCategorizer:
     def calculate_positions(self, cifrolotto):
         sorted_cifrolotto = sorted(cifrolotto.items(), key=lambda x: x[1], reverse=True)
         return {cifra: idx + 1 for idx, (cifra, _) in enumerate(sorted_cifrolotto)}
-
-    def categorize_pair(self, pos1, pos2):
-        categories = []
-        for category, rules in self.CATEGORY_RULES.items():
-            if (pos1, pos2) in rules:
-                categories.append(category)
-        return categories
 
     def categorize_numbers(self, extraction, cifrolotto):
         if not extraction or not cifrolotto:
@@ -160,10 +132,15 @@ class CifrolottoCategorizer:
             if posizione1 == -1 or posizione2 == -1:
                 continue
 
-            categorie_numero = self.categorize_pair(posizione1, posizione2)
-            categories.extend(categorie_numero)
+            # Convertiamo la posizione 10 in "0"
+            posizione1_str = "0" if posizione1 == 10 else str(posizione1)
+            posizione2_str = "0" if posizione2 == 10 else str(posizione2)
 
-            print(f"Numero: {numero}, Posizioni: {posizione1}, {posizione2}, Categorie: {categorie_numero}")
+            # Generiamo la categoria concatenando le due posizioni
+            categoria_generata = posizione1_str + posizione2_str
+            categories.append(categoria_generata)
+
+            print(f"Numero: {numero}, Posizioni: {posizione1_str}, {posizione2_str}, Categoria Generata: {categoria_generata}")
 
         category_counts = {cat: categories.count(cat) for cat in set(categories)}
         formatted_categories = [f"{count}|{cat}" for cat, count in category_counts.items()]

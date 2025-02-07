@@ -7,15 +7,9 @@ import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 dataset_path = os.path.join(script_dir, "../../dataset/cifrolotto.data")
 
-# Categorie conosciute
-KNOWN_CATEGORIES = {
-    "AA", "AB", "BA", "BB",
-#    "GT", "GB", "TD", "DT", "MD", "DM"
-}
-
 def category_count(dataset):
     """
-    Conta le categorie presenti nel dataset
+    Conta le categorie presenti nel dataset.
 
     Parametri:
     ----------
@@ -25,27 +19,24 @@ def category_count(dataset):
     # Rimuove i prefissi delle ruote (es. "BA\t", "CA\t")
     cleaned_text = re.sub(r'^[A-Z]{2}\t', '', dataset, flags=re.MULTILINE)
 
-    # Trova categorie e moltiplicatori
-    categories = re.findall(r'(\d*)\|([A-Z]+)', cleaned_text)
+    # Trova categorie e moltiplicatori (es. "3|12" -> Categoria "12" con moltiplicatore 3)
+    categories = re.findall(r'(\d*)\|(\d{2})', cleaned_text)
     category_counter = Counter()
 
     # Conta le categorie
     for multiplier, category in categories:
-        if category in KNOWN_CATEGORIES:
-            multiplier = int(multiplier) if multiplier else 1
-            category_counter[category] += multiplier
-
-    # Suddividi le categorie in base ai criteri
-    altre = {k: v for k, v in category_counter.items() if k in ['AA', 'AB', 'BA', 'BB']}
+        multiplier = int(multiplier) if multiplier else 1  # Default a 1 se vuoto
+        category_counter[category] += multiplier
 
     # Ordina le categorie per conteggio decrescente
-    sorted_categories = sorted(altre.items(), key=lambda x: x[1], reverse=True)
+    sorted_categories = sorted(category_counter.items(), key=lambda x: x[1], reverse=True)
 
     # Stampa dei risultati
-    totale_categorie = 0
+    totale_categorie = sum(category_counter.values())
+    print(f"[INFO] Totale categorie conteggiate: {totale_categorie}")
+
     for categoria, conteggio in sorted_categories:
         print(f"[INFO] {categoria}: {conteggio}")
-        totale_categorie += conteggio
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -63,6 +54,6 @@ if __name__ == "__main__":
         category_count(dataset)
 
     except FileNotFoundError:
-        print("Errore: il file 'cifrolotto.data' non è stato trovato.")
+        print("[ERRORE] Il file 'cifrolotto.data' non è stato trovato.")
     except Exception as e:
-        print(f"Si è verificato un errore: {e}")
+        print(f"[ERRORE] Si è verificato un errore: {e}")
