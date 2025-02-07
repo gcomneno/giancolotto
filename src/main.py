@@ -126,7 +126,6 @@ def main():
 
                 for ruota, assoc_list in formatted_pairings.items():
                     print(" ".join("|".join(pair) for pair in zip(*[iter(assoc_list)] * 2)))
-                    print()
 
     except Exception as e:
         print(f"Errore nel loop principale: {e}")
